@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>Kirjaa läsnäolo</h1>
+    <form action="" method="POST">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.attendance.label }}<br>
+            {{ form.attendance }}<br>
+            {% for error in form.attendance.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit }}</p>
+    </form>
+
+
+{% endblock %}

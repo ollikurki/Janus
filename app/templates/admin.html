@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    
+    <div class="container">
+    <h1>Admin</h1>
+    <button class="btn btn-default"><a href="{{ url_for('create_user') }}">Lisää käyttäjä</a></button>
+    <button class="btn btn-default"><a href="{{ url_for('add_student') }}">Lisää oppilas</a></button>
+    </div>
+{% endblock %}
