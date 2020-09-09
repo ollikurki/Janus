@@ -45,12 +45,12 @@ def login():
         login_user(user)
         
         
-        if current_user.clearance == 0:
-            next_page = url_for('admin_main')
-        elif current_user.clearance == 1:
-            next_page = url_for('attendance_main')
-        else:
-            next_page = url_for('index')
+#        if current_user.clearance == 0:
+#            next_page = url_for('admin_main')
+#        elif current_user.clearance == 1:
+#            next_page = url_for('attendance_main')
+#        else:
+        next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Kirjaudu sisään', form=form)
 
@@ -82,12 +82,12 @@ def logout():
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin_main():
-    if current_user.is_authenticated:
-        if current_user.clearance == 0:
-            return render_template('admin.html', title='Admin')
-        else:
-            flash('Luvaton pääsy!')
-            return redirect('/')
+    if current_user.is_authenticated and current_user.clearance == 0:
+#        if current_user.clearance == 0:
+        return render_template('admin.html', title='Admin')
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
 
 #user creation route and function
 #fetching the form data and submitting it to the db
@@ -95,23 +95,23 @@ def admin_main():
 @app.route('/admin/create_user', methods=['GET', 'POST'])
 @login_required
 def create_user():
-    if current_user.is_authenticated:
-        if current_user.clearance == 0:
-            form = AdministrationForm()
-            if form.validate_on_submit():
-                user = User(username=form.lastname.data+'.'+form.firstname.data, clearance=form.clearance.data)
-                user.set_password(form.password.data)
-                db.session.add(user)
-                db.session.flush()
-                person = Person(first_name=form.firstname.data, last_name=form.lastname.data, user_id=user.id)
-                db.session.add(person)
-                db.session.commit()
-                flash('Uusi käyttäjä luotu!')
-                return redirect('/admin/create_user')
-            return render_template('user_management.html', title='Luo käyttäjä', form=form)
-        else:
-            flash('Luvaton pääsy!')
-            return redirect('/')
+    if current_user.is_authenticated and current_user.clearance == 0:
+#        if current_user.clearance == 0:
+        form = AdministrationForm()
+        if form.validate_on_submit():
+            user = User(username=form.lastname.data+'.'+form.firstname.data, clearance=form.clearance.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.flush()
+            person = Person(first_name=form.firstname.data, last_name=form.lastname.data, user_id=user.id)
+            db.session.add(person)
+            db.session.commit()
+            flash('Uusi käyttäjä luotu!')
+            return redirect('/admin/create_user')
+        return render_template('user_management.html', title='Luo käyttäjä', form=form)
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
 
 #route to add a student and function for it
 #fetching the form data and submitting it to the db
@@ -119,33 +119,32 @@ def create_user():
 @app.route('/admin/add_student', methods=['GET', 'POST'])
 @login_required
 def add_student():
-    if current_user.is_authenticated:
-        if current_user.clearance == 0:
-            form = StudentForm()
-            if form.validate_on_submit():
-                student = Student(group=form.group.data, full_name=form.firstname.data+' '+form.lastname.data)
-                db.session.add(student)
-                db.session.flush()
-                person = Person(first_name=form.firstname.data, last_name=form.lastname.data, student_id=student.id)
-                db.session.add(person)
-                db.session.commit()
-                flash('Uusi oppilas lisätty!')
-                return redirect('/admin/add_student')
-            return render_template('student_management.html', title='Lisää oppilas', form=form)
-        else:
-            flash('Luvaton pääsy!')
-            return redirect('/')
+    if current_user.is_authenticated and current_user.clearance == 0:
+#        if current_user.clearance == 0:
+        form = StudentForm()
+        if form.validate_on_submit():
+            student = Student(group=form.group.data, full_name=form.firstname.data+' '+form.lastname.data)
+            db.session.add(student)
+            db.session.flush()
+            person = Person(first_name=form.firstname.data, last_name=form.lastname.data, student_id=student.id)
+            db.session.add(person)
+            db.session.commit()
+            flash('Uusi oppilas lisätty!')
+            return redirect('/admin/add_student')
+        return render_template('student_management.html', title='Lisää oppilas', form=form)
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
 
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance_main():
-    if current_user.is_authenticated:
-        if current_user.clearance == 1:
-            return render_template('attendance.html', title='Läsnäolo hallinta')
-
-        else:
-            flash('Luvaton pääsy!')
-            return redirect('/')
+    if current_user.is_authenticated and current_user.clearance == 1:
+#        if current_user.clearance == 1:
+        return render_template('attendance.html', title='Läsnäolo hallinta')
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
 
 #the first page on attendance logging
 #required the group to be selected and generates the student list for the second page by it
@@ -170,22 +169,22 @@ def group_select():
 @app.route('/attendance/log_attendance', methods=['GET', 'POST'])
 @login_required
 def attendance_selection():
-    if current_user.is_authenticated:
-        if current_user.clearance == 1:
-            form = AttendanceForm()
-            form.attendance.choices = student_list
-            if form.validate_on_submit():
-                attendance_list = form.attendance.data
-                attendance_to_insert = [Attendance(student_id=i, attendance=date.today()) for i in attendance_list]
+    if current_user.is_authenticated and current_user.clearance == 1:
+#        if current_user.clearance == 1:
+        form = AttendanceForm()
+        form.attendance.choices = student_list
+        if form.validate_on_submit():
+            attendance_list = form.attendance.data
+            attendance_to_insert = [Attendance(student_id=i, attendance=date.today()) for i in attendance_list]
 #            attendance_try = Attendance([{'student_id': i} for i in attendance_list])
 #            attendance_data = Attendance(attendance=date.today())
-                db.session.bulk_save_objects(attendance_to_insert)
+            db.session.bulk_save_objects(attendance_to_insert)
 #            db.session.add(attendance_data)
-                db.session.commit()
-            return render_template('log_attendance.html', title='Kirjaa läsnäolo', form=form)
-        else:
-            flash('Luvaton pääsy!')
-            return redirect('/')
+            db.session.commit()
+        return render_template('log_attendance.html', title='Kirjaa läsnäolo', form=form)
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
 
 @app.route('/attendance/check_attendance', methods=['GET', 'POST'])
 @login_required
@@ -220,7 +219,7 @@ def attendance_check():
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user.html', user=user)
+    return render_template('user.html', title="Käyttäjä", user=user)
 
 #adding an route for admin manual, so that in the future it can be made a little cleaner,
 #if there is more manuals added and the software moved
