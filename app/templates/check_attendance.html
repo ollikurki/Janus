@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>Hae Läsnäolo</h1>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% if list %}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">Nimi</th>
+            <th scope="col">Läsnä</th>
+        </tr>
+    </thead>
+    {% for row in list %}
+    <tbody>
+        <tr>
+            <td> {{ row[2] }} </td>
+            <td> {{ row[3] }} </td>
+        </tr>
+    </tbody>
+    {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

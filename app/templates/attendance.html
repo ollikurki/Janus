@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <h1>Läsnäolo hallinta</h1>
+    <button class="btn btn-default"><a href="{{ url_for('group_select') }}">Läsnäolo kirjaus</a></button>
+    <button class="btn btn-default"><a href="{{ url_for('attendance_check') }}">Läsnäolo tarkistus</a></button>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <table>
+        <tr valign="top">
+            <td>
+                <h1>Käyttäjä: {{ user.username }}</h1>
+                {% if user.last_seen %}<p>Viimeksi kirjautunut: {{ user.last_seen }}</p>{% endif %}
+            </td>
+        </tr>
+    </table>
+{% endblock %}
