@@ -1,0 +1,7 @@
+09.09.2020
+
+-Muokattu navigointia korvaamalla "Admin" ja "Läsnäolo" sivut työkalujen omilla sivuilla.
+-Siistitty käyttövaatimusten määrittelyä.
+-Lisätty Manual linkki, mistä löytyy käyttöoppaat.
+-Lisätty sivuston esittelyä kotisivulle.
+-Kotisivulle lisätty muutos listausta.

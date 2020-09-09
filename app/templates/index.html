@@ -2,12 +2,18 @@
 
 {% block app_content %}
     <div class="container">
-        <h1>Tervehdys, {{ current_user.username }}!</h1>
-        <p>Olet kirjautunut sisälle Janus läsnäolon seuranta järjestelmään ja toivomme teidän käytön sujuvan mutkitta.</p>
-        <p>Käyttöä helpottavaksi oikealta navigoinnista löytyy Manual linkki, joska avautuu käyttöopas. Kyseinen opas on vielä suppea, mutta toivomme sen riittävän alkuun pääsemiseen.</p>
-        <p>Tämän ohjelmiston tarkoitus on helpottaa sinun tehtäviä oppilaiden läsnäolon kirjauksessa ja seurannassa. Eikö olekin mukavampi pystyä avaamaan selain ja syöttää sivuston url saadakseen tämän nopean toimen tehtyä?</p>
-    </div>
-    <div class="container">
-        <pre>{{ version }}</pre>
+        <dic class="row justify-content-md-center">
+            <h1>Tervehdys!</h1>
+            <div class="col col-md-auto">
+                <p>Olet kirjautunut sisälle Janus läsnäolon seuranta järjestelmään ja toivomme teidän käytön sujuvan mutkitta.</p>
+                <p>Käyttöä helpottavaksi oikealta navigoinnista löytyy Manual linkki, joska avautuu käyttöopas. Kyseinen opas on vielä suppea, mutta toivomme sen riittävän alkuun pääsemiseen.</p>
+                <p>Tämän ohjelmiston tarkoitus on helpottaa sinun tehtäviä oppilaiden läsnäolon kirjauksessa ja seurannassa. Eikö olekin mukavampi pystyä avaamaan selain ja syöttää sivuston url saadakseen tämän nopean toimen tehtyä?</p>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="col col-md-auto">
+                <pre>{{ version }}</pre>
+            </div>
+        </div>
     </div>
 {% endblock %}

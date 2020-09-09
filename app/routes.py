@@ -25,7 +25,9 @@ def before_request():
 @app.route('/index')
 @login_required
 def index():
-    return render_template('index.html', title='Koti')
+    with open('version_history.txt') as file:
+        content = file.read()
+    return render_template('index.html', title='Koti', version=content)
 
 #route for the login page
 #login function that checks if the user is already logged in and redirecting them to the index page if so
