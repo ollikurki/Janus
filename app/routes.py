@@ -18,7 +18,7 @@ def before_request():
         current_user.last_seen = datetime.now(tz=None)
         db.session.commit()
 
-#setting the routes for the pages
+#setting the base route for the pages
 @app.route('/')
 
 #defining the index page to be only for those that are logged in
@@ -45,8 +45,6 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user)
-        
-        
 #        if current_user.clearance == 0:
 #            next_page = url_for('admin_main')
 #        elif current_user.clearance == 1:
@@ -84,7 +82,7 @@ def logout():
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin_main():
-    if current_user.is_authenticated and current_user.clearance == 0:
+    if current_user.is_authenticated and current_user.clearance == 3:
 #        if current_user.clearance == 0:
         return render_template('admin.html', title='Admin')
     else:
@@ -97,7 +95,7 @@ def admin_main():
 @app.route('/admin/create_user', methods=['GET', 'POST'])
 @login_required
 def create_user():
-    if current_user.is_authenticated and current_user.clearance == 0:
+    if current_user.is_authenticated and current_user.clearance == 3:
 #        if current_user.clearance == 0:
         form = AdministrationForm()
         if form.validate_on_submit():
@@ -121,7 +119,7 @@ def create_user():
 @app.route('/admin/add_student', methods=['GET', 'POST'])
 @login_required
 def add_student():
-    if current_user.is_authenticated and current_user.clearance == 0:
+    if current_user.is_authenticated and current_user.clearance == 3:
 #        if current_user.clearance == 0:
         form = StudentForm()
         if form.validate_on_submit():
@@ -229,7 +227,7 @@ def user(username):
 @app.route('/manual')
 @login_required
 def manual():
-    if current_user.is_authenticated and current_user.clearance == 0:
+    if current_user.is_authenticated and current_user.clearance == 3:
         return redirect("/static/Admin_manual.pdf")
     elif current_user.is_authenticated and current_user.clearance == 1:
         return redirect("/static/Opettaja_manual.pdf")
