@@ -8,7 +8,7 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 from flask_bootstrap import Bootstrap
 
-#Defining the variables to use in other sections of the app
+#Defining the tools for the app to use easier
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
@@ -34,7 +34,8 @@ if not app.debug:
             credentials=auth, secure=secure)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
-#setting a path for logging info to be maintained locally, doesn't work yet..
+
+#setting a path for logging info to be maintained locally, finally works!
     if not os.path.exists('logs'):
         os.mkdir('logs')
     file_handler = RotatingFileHandler('logs/Janus.log', maxBytes=10240, backupCount=10)

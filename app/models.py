@@ -39,13 +39,14 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     group = db.Column(db.String(16))
     full_name = db.Column(db.String(160))
-    
+
 #table for attendance records
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     attendance = db.Column(db.Date)
 
+#creating the function to load the user when logging in
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
