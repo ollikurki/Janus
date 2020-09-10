@@ -1,3 +1,7 @@
+10.09.2020
+
+-Korjattu käyttäjänluonnissa admin käyttäjän luominen
+
 09.09.2020
 
 -Muokattu navigointia korvaamalla "Admin" ja "Läsnäolo" sivut työkalujen omilla sivuilla.
