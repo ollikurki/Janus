@@ -1,3 +1,12 @@
+13.09.2020
+
+-Lisätty hallinnon käyttäjille toiminto lisätä ryhmiä
+-Muutettu ryhmien ilmaisua valinta valikoissa
+-Muutettu läsnäolo taulua eri näköiseksi
+-Lisätty ilmoituksia läsnäolon kirjaukseen ja tarkistukseen
+-Muutettu manuaaleja uusien muutosten valossa
+-Nimikkeitä ja otsikoita muokattu
+
 10.09.2020
 
 -Korjattu käyttäjänluonnissa admin käyttäjän luominen

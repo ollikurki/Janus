@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, request, url_for
 from app import app
-from app.forms import LoginForm, AdministrationForm, StudentForm, LogAttendanceGroupSelectForm, CheckAttendanceGroupSelectForm, AttendanceForm
+from app.forms import LoginForm, AdministrationForm, StudentForm, LogAttendanceGroupSelectForm, CheckAttendanceGroupSelectForm, AttendanceForm, GroupMarkingForm, groups_query
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Person, Student, Attendance
+from app.models import User, Person, Student, Attendance, Groups
 from werkzeug.urls import url_parse
 from app import db
 from datetime import datetime, date
@@ -120,10 +120,13 @@ def create_user():
 @login_required
 def add_student():
     if current_user.is_authenticated and current_user.clearance == 3:
-#        if current_user.clearance == 0:
+#        groups_query = Groups.query.all()
+#        if current_user.clearance == 0: 
         form = StudentForm()
+#        form.group.choices = [(x.id, x.marking) for x in groups_query]
+        form.group.choices = groups_query()
         if form.validate_on_submit():
-            student = Student(group=form.group.data, full_name=form.firstname.data+' '+form.lastname.data)
+            student = Student(group_id=form.group.data, full_name=form.firstname.data+' '+form.lastname.data)
             db.session.add(student)
             db.session.flush()
             person = Person(first_name=form.firstname.data, last_name=form.lastname.data, student_id=student.id)
@@ -132,6 +135,21 @@ def add_student():
             flash('Uusi oppilas lisätty!')
             return redirect('/admin/add_student')
         return render_template('student_management.html', title='Lisää oppilas', form=form)
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
+
+@app.route('/add_groups', methods=['GET', 'POST'])
+@login_required
+def add_groups():
+    if current_user.is_authenticated and current_user.clearance ==3:
+        form = GroupMarkingForm()
+        if form.validate_on_submit():
+            marking = Groups(marking=form.marking.data)
+            db.session.add(marking)
+            db.session.commit()
+            flash('Luokkaryhmä lisätty!')
+        return render_template('add_groups.html', title='Lisää ryhmiä', form=form)
     else:
         flash('Luvaton pääsy!')
         return redirect('/')
@@ -154,10 +172,12 @@ def attendance_main():
 def group_select():
     if current_user.is_authenticated and current_user.clearance == 1:
         form = LogAttendanceGroupSelectForm()
+        form.group_select.choices = groups_query()
         if form.validate_on_submit():
-            students = Student.query.filter_by(group=form.group_select.data).all()
+            students = Student.query.filter_by(group_id=form.group_select.data).all()
             global student_list
             student_list=[(i.id, i.full_name) for i in students]
+            print(student_list)
             return redirect('/attendance/log_attendance')
         return render_template('group_select.html', title='Läsnäolo', form=form)
     else:
@@ -181,7 +201,8 @@ def attendance_selection():
             db.session.bulk_save_objects(attendance_to_insert)
 #            db.session.add(attendance_data)
             db.session.commit()
-        return render_template('log_attendance.html', title='Kirjaa läsnäolo', form=form)
+            flash('Läsnäolot merkattu!')
+        return render_template('log_attendance.html', title='Kirjaa läsnäolo', form=form, sizelength=len(student_list))
     else:
         flash('Luvaton pääsy!')
         return redirect('/')
@@ -191,6 +212,7 @@ def attendance_selection():
 def attendance_check():
     if current_user.is_authenticated and current_user.clearance == 1:
         form = CheckAttendanceGroupSelectForm()
+        form.group_select.choices = groups_query()
         def list():
             if form.validate_on_submit():
 #                students = Student.query.filter_by(group=form.group_select.data).all()
@@ -199,15 +221,14 @@ def attendance_check():
 #                student_names=[(i.full_name) for i in students]
 #                conv = student_names + attendance_date
                 if form.by_date.data:
-                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group == form.group_select.data).order_by(Attendance.id.desc())
-                    print(conv)
-                    print(group_select)
+                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group_id == form.group_select.data).order_by(Attendance.id.desc())
+                    flash('Läsnäolot järjestetty laskeutuen päivämäärällä!')
                     return conv
                 elif form.by_student.data:
-                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group == form.group_select.data).order_by(Student.full_name)
+                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group_id == form.group_select.data).order_by(Student.full_name)
+                    flash('Länäolot järjestetty nimijärjestykseen!')
                     return conv
         list = list()
-        print(list)
         return render_template('check_attendance.html', title="Läsnäolo tarkistus", form=form, list=list)
     else:
         flash('Luvaton pääsy!')

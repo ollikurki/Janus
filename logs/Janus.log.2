@@ -1,4 +1,4 @@
-2020-09-13 19:04:22,291 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
+2020-09-13 18:40:07,456 ERROR Exception on /add_groups [GET] [in %(lineno)d]
 Traceback (most recent call last):
   File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
     response = self.full_dispatch_request()
@@ -14,13 +14,26 @@ Traceback (most recent call last):
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
     return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 171, in group_select
-    groups = [(x.id, x.marking) for x in groups_query if x in groups]
-  File "/home/kukri/Janus/app/routes.py", line 171, in <listcomp>
-    groups = [(x.id, x.marking) for x in groups_query if x in groups]
-NameError: free variable 'groups' referenced before assignment in enclosing scope
-2020-09-13 19:04:59,062 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:05:01,234 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
+  File "/home/kukri/Janus/app/routes.py", line 148, in add_groups
+    return render_template('select_groups.html', title='Lisää ryhmiä', form=form)
+  File "/home/kukri/.local/lib/python3.6/site-packages/flask/templating.py", line 138, in render_template
+    ctx.app.jinja_env.get_or_select_template(template_name_or_list),
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 930, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 883, in get_template
+    return self._load_template(name, self.make_globals(globals))
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 857, in _load_template
+    template = self.loader.load(self, name, globals)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/loaders.py", line 115, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "/home/kukri/.local/lib/python3.6/site-packages/flask/templating.py", line 60, in get_source
+    return self._get_source_fast(environment, template)
+  File "/home/kukri/.local/lib/python3.6/site-packages/flask/templating.py", line 89, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: select_groups.html
+2020-09-13 18:41:36,871 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:42:43,633 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:42:45,311 ERROR Exception on /add_groups [GET] [in %(lineno)d]
 Traceback (most recent call last):
   File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
     response = self.full_dispatch_request()
@@ -36,13 +49,29 @@ Traceback (most recent call last):
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
     return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 171, in group_select
-    groups_list = [(x.id, x.marking) for x in groups_query if x in groups]
-  File "/home/kukri/Janus/app/routes.py", line 171, in <listcomp>
-    groups_list = [(x.id, x.marking) for x in groups_query if x in groups]
-NameError: name 'groups' is not defined
-2020-09-13 19:05:27,903 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:05:31,175 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
+  File "/home/kukri/Janus/app/routes.py", line 148, in add_groups
+    return render_template('add_groups.html', title='Lisää ryhmiä', form=form)
+  File "/home/kukri/.local/lib/python3.6/site-packages/flask/templating.py", line 138, in render_template
+    ctx.app.jinja_env.get_or_select_template(template_name_or_list),
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 930, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 883, in get_template
+    return self._load_template(name, self.make_globals(globals))
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 857, in _load_template
+    template = self.loader.load(self, name, globals)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/loaders.py", line 127, in load
+    code = environment.compile(source, name, filename)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 638, in compile
+    self.handle_exception(source=source_hint)
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/environment.py", line 832, in handle_exception
+    reraise(*rewrite_traceback_stack(source=source))
+  File "/home/kukri/.local/lib/python3.6/site-packages/jinja2/_compat.py", line 28, in reraise
+    raise value.with_traceback(tb)
+  File "/home/kukri/Janus/app/templates/add_groups.html", line 2, in template
+    {% import 'bootstrap/wtf.html' ad wtf %}
+jinja2.exceptions.TemplateSyntaxError: expected token 'as', got 'ad'
+2020-09-13 18:43:06,285 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:44:23,795 ERROR Exception on /add_groups [POST] [in %(lineno)d]
 Traceback (most recent call last):
   File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
     response = self.full_dispatch_request()
@@ -58,14 +87,11 @@ Traceback (most recent call last):
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
     return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 174, in group_select
-    form.group_select.choises = groups
-NameError: name 'groups' is not defined
-2020-09-13 19:05:50,835 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:07:39,822 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:09:27,533 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:13:37,766 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:13:40,137 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
+  File "/home/kukri/Janus/app/routes.py", line 145, in add_groups
+    marking = Group(marking=form.marking.data)
+NameError: name 'Group' is not defined
+2020-09-13 18:44:48,510 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:44:56,030 ERROR Exception on /add_groups [POST] [in %(lineno)d]
 Traceback (most recent call last):
   File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
     response = self.full_dispatch_request()
@@ -81,13 +107,21 @@ Traceback (most recent call last):
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
     return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 174, in group_select
-    form.LogAttendanceGroupSelectForm.choises = groups_list
-AttributeError: 'LogAttendanceGroupSelectForm' object has no attribute 'LogAttendanceGroupSelectForm'
-2020-09-13 19:14:48,988 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:15:32,644 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:16:24,954 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:16:27,006 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
+  File "/home/kukri/Janus/app/routes.py", line 147, in add_groups
+    db.commit()
+AttributeError: 'SQLAlchemy' object has no attribute 'commit'
+2020-09-13 18:45:23,657 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:51:55,943 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:52:03,471 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:52:43,108 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:53:50,339 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:54:03,874 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:54:15,583 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:54:21,586 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:54:32,039 INFO Janus sartup [in %(lineno)d]
+2020-09-13 18:55:19,602 INFO Janus sartup [in %(lineno)d]
+2020-09-13 19:03:23,571 INFO Janus sartup [in %(lineno)d]
+2020-09-13 19:03:57,404 ERROR Exception on /attendance/group_select [GET] [in %(lineno)d]
 Traceback (most recent call last):
   File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
     response = self.full_dispatch_request()
@@ -103,47 +137,7 @@ Traceback (most recent call last):
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
     return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 174, in group_select
-    form.group_select.choises = string([(x.id, x.marking) for x in groups_query])
-NameError: name 'string' is not defined
-2020-09-13 19:16:39,651 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:21:08,396 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:25:02,715 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:28:25,532 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:37:44,177 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:37:47,234 ERROR Exception on /admin/add_student [GET] [in %(lineno)d]
-Traceback (most recent call last):
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 2447, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 1952, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 1821, in handle_user_exception
-    reraise(exc_type, exc_value, tb)
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/_compat.py", line 39, in reraise
-    raise value
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 1950, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask/app.py", line 1936, in dispatch_request
-    return self.view_functions[rule.endpoint](**req.view_args)
-  File "/home/kukri/.local/lib/python3.6/site-packages/flask_login/utils.py", line 272, in decorated_view
-    return func(*args, **kwargs)
-  File "/home/kukri/Janus/app/routes.py", line 127, in add_student
-    form.group.choices = groups_query()
-  File "/home/kukri/Janus/app/forms.py", line 8, in groups_query
-    groups_query = Groups.query.all()
-NameError: name 'Groups' is not defined
-2020-09-13 19:38:53,365 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:40:27,463 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:45:00,479 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:45:28,621 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:46:09,367 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:48:55,363 INFO Janus sartup [in %(lineno)d]
-2020-09-13 19:54:34,291 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:26:43,788 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:28:16,910 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:28:45,341 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:31:48,451 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:32:37,458 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:36:02,824 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:37:13,413 INFO Janus sartup [in %(lineno)d]
-2020-09-13 20:59:36,092 INFO Janus sartup [in %(lineno)d]
+  File "/home/kukri/Janus/app/routes.py", line 170, in group_select
+    groups_query = Group.query.all()
+NameError: name 'Group' is not defined
+2020-09-13 19:04:20,784 INFO Janus sartup [in %(lineno)d]

@@ -5,7 +5,17 @@
     <h1>Kirjaa läsnäolo</h1>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <form class="form" action="" method="post" role="form">
+                {{ form.hidden_tag() }}
+                {{ form.attendance.label }}
+                <div>
+                    {{ form.attendance(size=sizelength, class="col-md-8") }}
+                    {% for error in form.attendance.errors %}}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn btn-default") }}
+            </form>
         </div>
     </div>
 {% endblock %}
