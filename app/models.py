@@ -33,18 +33,22 @@ class Person(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
 
-
 #table for students and the group they belong to
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     group = db.Column(db.String(16))
     full_name = db.Column(db.String(160))
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
 
 #table for attendance records
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     attendance = db.Column(db.Date)
+
+class Groups(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    marking = db.Column(db.String(16))
 
 #creating the function to load the user when logging in
 @login.user_loader
