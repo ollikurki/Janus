@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, request, url_for
 from app import app
-from app.forms import LoginForm, AdministrationForm, StudentForm, LogAttendanceGroupSelectForm, CheckAttendanceGroupSelectForm, AttendanceForm, GroupMarkingForm, groups_query
+from app.forms import LoginForm, AdministrationForm, StudentForm, LogAttendanceGroupSelectForm, CheckAttendanceGroupSelectForm, AttendanceForm, GroupMarkingForm, groups_query, GetUserForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Person, Student, Attendance, Groups
 from werkzeug.urls import url_parse
@@ -89,6 +89,9 @@ def admin_main():
         flash('Luvaton pääsy!')
         return redirect('/')
 
+
+
+
 #user creation route and function
 #fetching the form data and submitting it to the db
 #user data is flushed to the db before person data for the id of users to be available for insertion to user_id column
@@ -97,21 +100,63 @@ def admin_main():
 def create_user():
     if current_user.is_authenticated and current_user.clearance == 3:
 #        if current_user.clearance == 0:
-        form = AdministrationForm()
-        if form.validate_on_submit():
-            user = User(username=form.lastname.data+'.'+form.firstname.data, clearance=form.clearance.data)
-            user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.flush()
-            person = Person(first_name=form.firstname.data, last_name=form.lastname.data, user_id=user.id)
-            db.session.add(person)
-            db.session.commit()
-            flash('Uusi käyttäjä luotu!')
-            return redirect('/admin/create_user')
-        return render_template('user_management.html', title='Luo käyttäjä', form=form)
+        create_userform = AdministrationForm()
+        check_userform = GetUserForm()
+        if create_userform.user_submit.data and create_userform.validate():
+            if create_userform.clearance.data == 1:
+                group = 'Opettaja'
+            elif create_userform.clearance.data == 2:
+                group = 'Oppilas'
+            elif create_userform.clearance.data == 3:
+                group = 'Admin'
+            user = User(username=create_userform.lastname.data+'.'+create_userform.firstname.data, clearance=create_userform.clearance.data, group=group)
+            check_user = User.query.filter_by(username=create_userform.lastname.data+'.'+create_userform.firstname.data).first()
+            if check_user is None:
+                user.set_password(create_userform.password.data)
+                db.session.add(user)
+                db.session.flush()
+                person = Person(first_name=create_userform.firstname.data, last_name=create_userform.lastname.data, user_id=user.id)
+                db.session.add(person)
+                db.session.commit()
+                flash('Uusi käyttäjä luotu!')
+                return redirect('/admin/create_user')
+            else:
+                flash('Hupsista, käyttäjätunnuksessa tai salasanassa on vikaa. Valitse jokin muu tunnus.')
+                return redirect(url_for('create_user'))
+        return render_template('user_management.html', title='Käyttäjänhallinta', create_userform=create_userform, check_userform=check_userform)
     else:
         flash('Luvaton pääsy!')
         return redirect('/')
+
+@app.route('/admin/check_users', methods=['GET', 'POST'])
+@login_required
+def check_users():
+    if current_user.is_authenticated and current_user.clearance == 3:
+        create_userform = AdministrationForm()
+        check_userform = GetUserForm()
+        def list():
+            if check_userform.get_users.data and check_userform.validate():
+                users = db.session.query(User.id, User.username, User.group).order_by(User.id.asc())
+                users_list = [(user.id, user.username, user.group) for user in users]
+                return(users_list)
+        user_list = list()
+        return render_template('user_management.html', title='Käyttäjänhallinta', create_userform=create_userform, check_userform=check_userform, user_list=user_list)
+    else:
+        flash('Luvaton pääsy!')
+        return redirect('/')
+
+@app.route('/admin/remove_user/<int:id>', methods=['GET', 'POST'])
+@login_required
+def remove_user(id):
+    if current_user.is_authenticated and current_user.clearance == 3:
+        user = db.session.query(User).filter(User.id == id).first()
+        person = db.session.query(Person).filter(Person.user_id == id).first()
+        db.session.delete(user)
+        db.session.commit()
+        return redirect(url_for('check_users'))
+        create_userform = AdministrationForm()
+        check_userform = GetUserForm()
+        return render_template('user_management.html', title='Käyttäjänhallinta', create_userform=create_userform, check_userform=check_userform)
 
 #route to add a student and function for it
 #fetching the form data and submitting it to the db
@@ -177,7 +222,6 @@ def group_select():
             students = Student.query.filter_by(group_id=form.group_select.data).all()
             global student_list
             student_list=[(i.id, i.full_name) for i in students]
-            print(student_list)
             return redirect('/attendance/log_attendance')
         return render_template('group_select.html', title='Läsnäolo', form=form)
     else:

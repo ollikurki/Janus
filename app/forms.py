@@ -26,7 +26,8 @@ class AdministrationForm(FlaskForm):
     password2 = PasswordField('Toista salasana', validators=[DataRequired(), EqualTo('password', message='Salasanojen täytyy olla sama')])
 #pitää clearancessa muuttaa admin taso 0 -> jokin muu, esim 3.. ohjelma taitaa ymmärtää 0 "null"ina
     clearance = SelectField(u'Taso', choices=[("3", 'Admin'), ('1', 'Opettaja'), ('2', 'Oppilas')], coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Luo Käyttäjä')
+    user_submit = SubmitField(label='Luo Käyttäjä')
+    get_users = SubmitField(label='Hae käyttäjät')
 
 #Checkin if the database already has a username that is to be added.
     def validate_username(self, username):
@@ -56,8 +57,14 @@ class CheckAttendanceGroupSelectForm(FlaskForm):
 #Form for logging attendance of students
 class AttendanceForm(FlaskForm):
     attendance = SelectMultipleField(u'Oppilaat', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Kirjaa läsnäolleeksi')
+    submit = SubmitField(label='Kirjaa läsnäolleeksi')
 
 class GroupMarkingForm(FlaskForm):
     marking = StringField('Luokkaryhmä', validators=[DataRequired(), Length(max=16, message='max 16 merkkiä')])
-    submit = SubmitField('Lisää luokkaryhmä')
+    submit = SubmitField(label='Lisää luokkaryhmä')
+
+class GetUserForm(FlaskForm):
+    get_users = SubmitField(label='Hae käyttäjät')
+
+
+

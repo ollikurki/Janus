@@ -17,6 +17,7 @@ class User(UserMixin, db.Model):
     clearance = db.Column(db.Integer)
     group = db.Column(db.String(16))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    persons = db.relationship('Person', cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

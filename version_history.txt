@@ -1,3 +1,9 @@
+16.09.2020
+
+-Muutettu Lisää käyttäjä sivu Käyttäjänhallinta sivuksi
+-Lisätty käyttäjien haku hallinnon käyttäjille
+-Lisätty käyttäjän poisto toiminto
+
 13.09.2020
 
 -Lisätty hallinnon käyttäjille toiminto lisätä ryhmiä
