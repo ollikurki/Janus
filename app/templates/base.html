@@ -27,9 +27,10 @@
                     <li><a href="{{ url_for('attendance_check') }}">Läsnäolon tarkistus</a></li>
                     {% endif %}
                     {% if current_user.clearance == 3 %}
-                    <li><a href="{{ url_for('create_user') }}">Lisää käyttäjä</a></li>
+                    <li><a href="{{ url_for('create_user') }}">Käyttäjänhallinta</a></li>
                     <li><a href="{{ url_for('add_student') }}">Lisää oppilas</a></li>
                     <li><a href="{{ url_for('add_groups') }}">Lisää ryhmä</a></li>
+
                     {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
