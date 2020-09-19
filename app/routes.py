@@ -45,11 +45,6 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user)
-#        if current_user.clearance == 0:
-#            next_page = url_for('admin_main')
-#        elif current_user.clearance == 1:
-#            next_page = url_for('attendance_main')
-#        else:
         next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Kirjaudu sisään', form=form)
@@ -60,25 +55,7 @@ def logout():
     logout_user()
     return redirect('/index')
 
-#a user creation route and function as it was before testing new things
-#@app.route('/create_user', methods=['GET', 'POST'])
-#@login_required
-#def create_user():
-#    if current_user.is_authenticated:
-#        form = AdministrationForm()
-#        if form.validate_on_submit():
-#            user = User(username=form.username.data, clearance=form.clearance.data, group=form.group.data)
-#            user.set_password(form.password.data)
-#            db.session.add(user)
-#            db.session.flush()
-#            person = Person(first_name=form.firstname.data, last_name=form.lastname.data, user_id=user.id)
-#            db.session.add(person)
-#            db.session.commit()
-#            flash('Uusi käyttäjä luotu!')
-#            return redirect('/create_user')
-#        return render_template('user_management.html', title='Hallinto', form=form)
-
-
+#redundant route, is not used at the moment for change of better ones.
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin_main():
@@ -128,6 +105,9 @@ def create_user():
         flash('Luvaton pääsy!')
         return redirect('/')
 
+#route to the user checking function
+#the function works for checking users from the database and creating a list from the returned data
+#the list is used in user_management.html to create the list of created users
 @app.route('/admin/check_users', methods=['GET', 'POST'])
 @login_required
 def check_users():
@@ -139,18 +119,25 @@ def check_users():
                 users = db.session.query(User.id, User.username, User.group).order_by(User.id.asc())
                 users_list = [(user.id, user.username, user.group) for user in users]
                 return(users_list)
+            if check_userform.get_user.data and check_userform.validate():
+                users = db.session.query(User.id, User.username, User.group).filter(User.username == check_userform.user_name.data)
+                users_list = [(user.id, user.username, user.group) for user in users]
+                return(users_list)
         user_list = list()
         return render_template('user_management.html', title='Käyttäjänhallinta', create_userform=create_userform, check_userform=check_userform, user_list=user_list)
     else:
         flash('Luvaton pääsy!')
         return redirect('/')
 
-@app.route('/admin/remove_user/<int:id>', methods=['GET', 'POST'])
+#route for the user remove function
+#the function removes users by their usernames getting them from the table on user_management.html page
+#the gotten username is used to query the user from database and delete it(sqlalchemy has its ways)
+@app.route('/admin/remove_user/<name>', methods=['GET', 'POST'])
 @login_required
-def remove_user(id):
+def remove_user(name):
     if current_user.is_authenticated and current_user.clearance == 3:
-        user = db.session.query(User).filter(User.id == id).first()
-        person = db.session.query(Person).filter(Person.user_id == id).first()
+        user = db.session.query(User).filter(User.username == name).first()
+#        person = db.session.query(Person).filter(Person.user_id == user.id).first()
         db.session.delete(user)
         db.session.commit()
         return redirect(url_for('check_users'))
@@ -165,10 +152,7 @@ def remove_user(id):
 @login_required
 def add_student():
     if current_user.is_authenticated and current_user.clearance == 3:
-#        groups_query = Groups.query.all()
-#        if current_user.clearance == 0: 
         form = StudentForm()
-#        form.group.choices = [(x.id, x.marking) for x in groups_query]
         form.group.choices = groups_query()
         if form.validate_on_submit():
             student = Student(group_id=form.group.data, full_name=form.firstname.data+' '+form.lastname.data)
@@ -184,6 +168,7 @@ def add_student():
         flash('Luvaton pääsy!')
         return redirect('/')
 
+#route for the function to add groups
 @app.route('/add_groups', methods=['GET', 'POST'])
 @login_required
 def add_groups():
@@ -199,6 +184,7 @@ def add_groups():
         flash('Luvaton pääsy!')
         return redirect('/')
 
+#redundant like /admin
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance_main():
@@ -234,16 +220,12 @@ def group_select():
 @login_required
 def attendance_selection():
     if current_user.is_authenticated and current_user.clearance == 1:
-#        if current_user.clearance == 1:
         form = AttendanceForm()
         form.attendance.choices = student_list
-        if form.validate_on_submit():
+        if form.attendance.data and form.validate_on_submit():
             attendance_list = form.attendance.data
             attendance_to_insert = [Attendance(student_id=i, attendance=date.today()) for i in attendance_list]
-#            attendance_try = Attendance([{'student_id': i} for i in attendance_list])
-#            attendance_data = Attendance(attendance=date.today())
             db.session.bulk_save_objects(attendance_to_insert)
-#            db.session.add(attendance_data)
             db.session.commit()
             flash('Läsnäolot merkattu!')
         return render_template('log_attendance.html', title='Kirjaa läsnäolo', form=form, sizelength=len(student_list))
@@ -251,6 +233,11 @@ def attendance_selection():
         flash('Luvaton pääsy!')
         return redirect('/')
 
+#route for the attendance_check() function
+#the function creates the choises for the drop down list by using groups_query() function in forms.py
+#it creates a list of the students by which button is pressed
+#it also queries based on the data injected
+#the if elif statements check if a named submit button is pressed
 @app.route('/attendance/check_attendance', methods=['GET', 'POST'])
 @login_required
 def attendance_check():
@@ -259,20 +246,26 @@ def attendance_check():
         form.group_select.choices = groups_query()
         def list():
             if form.validate_on_submit():
-#                students = Student.query.filter_by(group=form.group_select.data).all()
-#                students_list=[(i.id) for i in students]
-#                attendance_date = [Attendance.query.filter_by(student_id=i) for i in students_list]
-#                student_names=[(i.full_name) for i in students]
-#                conv = student_names + attendance_date
+#this query fetches the attendance and student data to be formed in descending order by date
                 if form.by_date.data:
                     conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group_id == form.group_select.data).order_by(Attendance.id.desc())
                     flash('Läsnäolot järjestetty laskeutuen päivämäärällä!')
                     return conv
+#this query fetches the attendance and student data to be formed by student names from A-Z
                 elif form.by_student.data:
                     conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.group_id == form.group_select.data).order_by(Student.full_name)
                     flash('Länäolot järjestetty nimijärjestykseen!')
                     return conv
+#this query fetches the attendance and student data of a specific student
+                elif form.by_name.data:
+                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Student.full_name == form.student_name.data).order_by(Attendance.id.desc())
+                    return conv
+#this query fetches the attendance and student data from a time frame between dates
+                elif form.by_specific_date.data:
+                    conv = db.session.query(Attendance.id, Student.id, Student.full_name, Attendance.attendance).join(Attendance).filter(Student.id == Attendance.student_id, Attendance.attendance.between(form.specific_date_start.data, form.specific_date_end.data)).order_by(Attendance.id.desc())
+                    return conv
         list = list()
+        print(list)
         return render_template('check_attendance.html', title="Läsnäolo tarkistus", form=form, list=list)
     else:
         flash('Luvaton pääsy!')

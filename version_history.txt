@@ -1,8 +1,15 @@
+20.09.2020
+
+-Lisätty oppilaiden läsnäolon hakuun toiminto hakea nimen perusteella
+-Lisätty oppilaiden läsnäolon hakuun toiminto hakea päivämäärä välillä
+-Lisätty käyttäjien hallintaan tietyn käyttäjän haku käyttäjätunnuksella
+
 16.09.2020
 
 -Muutettu Lisää käyttäjä sivu Käyttäjänhallinta sivuksi
 -Lisätty käyttäjien haku hallinnon käyttäjille
 -Lisätty käyttäjän poisto toiminto
+-Admin manuaali päivitetty
 
 13.09.2020
 
