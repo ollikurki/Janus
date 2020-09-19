@@ -10,35 +10,35 @@
             <form class="form" action="{{ url_for('create_user') }}" method="post" role="form">
                 {{ create_userform.hidden_tag() }}
                 <div class="form-group required">
-                    {{ create_userform.firstname.label }}
+                    {{ create_userform.firstname.label(class="control-label") }}
                     {{ create_userform.firstname(class="form-control") }}
                     {% for error in create_userform.firstname.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                 </div>
                 <div class="form-group required">
-                    {{ create_userform.lastname.label }}
+                    {{ create_userform.lastname.label(class="control-label") }}
                     {{ create_userform.lastname(class="form-control") }}
                     {% for error in create_userform.lastname.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                 </div>
                 <div class="form-group required">
-                    {{ create_userform.password.label }}
+                    {{ create_userform.password.label(class="control-label") }}
                     {{ create_userform.password(class="form-control") }}
                     {% for error in create_userform.password.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                 </div>
                 <div class="form-group required">
-                    {{ create_userform.password2.label }}
+                    {{ create_userform.password2.label(class="control-label") }}
                     {{ create_userform.password2(class="form-control") }}
                     {% for error in create_userform.password2.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
                  </div>
                 <div class="form-group required">
-                    {{ create_userform.clearance.label }}
+                    {{ create_userform.clearance.label(class="control-label") }}
                     {{ create_userform.clearance(class="form-control") }}
                     {% for error in create_userform.clearance.errors %}
                     <span style="color: red;">[{{ error }}]</span>
@@ -48,14 +48,22 @@
 
             </form>
         </div>
-        <h1>Hae Käyttäjät</h1>
-        <div class="col-md-6">
+        <h1>Käyttäjien haku</h1>
+        <div class="col-md-3">
             <form class="form" action="{{ url_for('check_users') }}" method="post" role="form">
                 {{ check_userform.hidden_tag() }}
+                <div class="form-group required">
+                    {{ check_userform.user_name.label(class="control-label") }}
+                    {{ check_userform.user_name(class="form-control") }}
+                    {{ check_userform.get_user(class="btn btn-default") }}
+                </div>
+                <div class="form-group required">
                 {{ check_userform.get_users(class="btn btn-default") }}
+                </div>
             </form><br>
+        </div>
             {% if user_list %}
-                <div class="col-md-6">
+                <div class="col-md-4" name="user_table">
                     <table class="table table-striped table-bordered table-hover table-responsive">
                     <thead>
                         <tr style="color: green;">
@@ -67,16 +75,16 @@
                     {% for row in user_list %}
                         <tbody>
                             <tr>
-                                <td> {{ row[1] }} </td>
-                                <td> {{ row[2] }} </td>
-                                <td><a id="{{ row[0] }}" class="btn btn-warning" href="/admin/remove_user/{{ row[0] }}">Poista</a></td>
+                                <td name="name"> {{ row[1] }} </td>
+                                <td name="user_clearance"> {{ row[2] }} </td>
+                                <td><a name="{{ row[1] }}" class="btn btn-warning" href="/admin/remove_user/{{ row[1] }}">Poista</a></td>
                             </tr>
                         </tbody>
                     {% endfor %}
                     </table>
                 </div>
             {% endif %}
-        </div>
+
     </div>
 </div>
 {% endblock %}
