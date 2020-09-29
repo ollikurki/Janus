@@ -55,7 +55,7 @@ def logout():
     logout_user()
     return redirect('/index')
 
-#redundant route, is not used at the moment for change of better ones.
+#this is not used at the moment for change of better ones.
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin_main():
@@ -184,7 +184,7 @@ def add_groups():
         flash('Luvaton pääsy!')
         return redirect('/')
 
-#redundant like /admin
+#not used like /admin
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance_main():
