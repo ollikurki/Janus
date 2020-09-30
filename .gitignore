@@ -135,3 +135,8 @@ dmypy.json
 
 #logs
 /logs/
+<<<<<<< HEAD
+=======
+
+/tests/
+>>>>>>> 32606eab9d85d4dbcea158fda90629a4c315b036
