@@ -131,6 +131,7 @@ dmypy.json
 #db migrations
 /migrations/
 
+.gitignore
+
 #logs
 /logs/
-
