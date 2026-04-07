@@ -335,6 +335,13 @@ class PasswordHistory(db.Model):
 3. [ ] Enhanced Excel export
 4. [ ] Attendance notes field
 
+### Phase K: Documentation 🔲 BACKLOG
+1. [ ] Update README.md with current feature set and setup instructions
+2. [ ] Sync API.md with all implemented endpoints
+3. [ ] Add inline documentation to service classes
+4. [ ] Create CONTRIBUTING.md with contribution guidelines
+5. [ ] Document deployment procedures
+
 ---
 
 ## 6. File Structure (Target)
