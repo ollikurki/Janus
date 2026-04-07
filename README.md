@@ -1,5 +1,8 @@
 # Janus - Student Attendance Management System
 
+> **⚠️ NOTICE: This project has been completely modernized using AI assistance.**  
+> The original codebase was significantly refactored and modernized with Flask 3, Bootstrap 5, modular blueprints, service layer, REST API, and many new features. If you were looking for the old version, this is a full rewrite.
+
 A Flask-based web application for managing student attendance in educational settings.
 
 ## Features
