@@ -1,10 +1,18 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    
-    <div class="container">
-    <h1>Admin</h1>
-    <button class="btn btn-default"><a href="{{ url_for('create_user') }}">Lisää käyttäjä</a></button>
-    <button class="btn btn-default"><a href="{{ url_for('add_student') }}">Lisää oppilas</a></button>
+<div class="container mt-4">
+    <h1>Administration</h1>
+    <div class="list-group mt-3">
+        <a href="{{ url_for('admin.check_users') }}" class="list-group-item list-group-item-action">
+            User Management
+        </a>
+        <a href="{{ url_for('admin.add_student') }}" class="list-group-item list-group-item-action">
+            Add Student
+        </a>
+        <a href="{{ url_for('admin.add_groups') }}" class="list-group-item list-group-item-action">
+            Add Groups
+        </a>
     </div>
+</div>
 {% endblock %}

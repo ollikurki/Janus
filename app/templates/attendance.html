@@ -1,9 +1,18 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<div class="container">
-    <h1>Läsnäolo hallinta</h1>
-    <button class="btn btn-default"><a href="{{ url_for('group_select') }}">Läsnäolo kirjaus</a></button>
-    <button class="btn btn-default"><a href="{{ url_for('attendance_check') }}">Läsnäolo tarkistus</a></button>
+<div class="container mt-4">
+    <h1>Attendance Management</h1>
+    <div class="list-group mt-3">
+        <a href="{{ url_for('attendance.group_select') }}" class="list-group-item list-group-item-action">
+            Log Attendance
+        </a>
+        <a href="{{ url_for('attendance.check_attendance') }}" class="list-group-item list-group-item-action">
+            Check Attendance
+        </a>
+        <a href="{{ url_for('attendance.export_attendance') }}" class="list-group-item list-group-item-action">
+            Export Attendance Data
+        </a>
+    </div>
 </div>
 {% endblock %}

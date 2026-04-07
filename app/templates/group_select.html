@@ -1,11 +1,13 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap5/form.html' as wtf %}
 
 {% block app_content %}
-    <h1>Valitse luokkaryhmä</h1>
+<div class="container mt-4">
+    <h1>Select Group</h1>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            {{ wtf.render_form(form, action=url_for('attendance.group_select'), method='POST') }}
         </div>
     </div>
+</div>
 {% endblock %}

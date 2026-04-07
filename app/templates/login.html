@@ -1,11 +1,16 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap5/form.html' as wtf %}
 
 {% block app_content %}
-    <h1>Kirjaudu sisään</h1>
-    <div class="row">
+<div class="container mt-4">
+    <div class="row justify-content-center">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <h1>Sign In</h1>
+            {{ wtf.render_form(form, action=url_for('auth.login'), method='POST') }}
+            <div class="mt-3">
+                <a href="{{ url_for('auth.reset_password_request') }}">Forgot your password?</a>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}

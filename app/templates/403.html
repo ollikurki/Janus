@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-1">403</h1>
+            <h2>Forbidden</h2>
+            <p>You do not have permission to access this resource.</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

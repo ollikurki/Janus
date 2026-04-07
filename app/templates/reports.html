@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1 class="mb-4">Attendance Reports</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    {{ form.group_select.label(class="form-label") }}
+                    {{ form.group_select(class="form-select") }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.days.label(class="form-label") }}
+                    {{ form.days(class="form-control") }}
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if stats %}
+    {% if stats is mapping %}
+    <div class="card">
+        <div class="card-header">
+            <h5>{{ stats.group_name }} - Last {{ stats.period_days }} days</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h3>{{ stats.total_students }}</h3>
+                    <p class="text-muted">Total Students</p>
+                </div>
+                <div class="col-md-3">
+                    <h3>{{ stats.total_records }}</h3>
+                    <p class="text-muted">Attendance Records</p>
+                </div>
+                <div class="col-md-3">
+                    <h3>{{ stats.possible_attendances }}</h3>
+                    <p class="text-muted">Possible Attendances</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="{% if stats.attendance_rate >= 75 %}text-success{% elif stats.attendance_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ stats.attendance_rate }}%
+                    </h3>
+                    <p class="text-muted">Attendance Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Students</th>
+                    <th>Records</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in stats %}
+                <tr>
+                    <td>{{ s.group_name }}</td>
+                    <td>{{ s.total_students }}</td>
+                    <td>{{ s.total_records }}</td>
+                    <td>
+                        <span class="{% if s.attendance_rate >= 75 %}text-success{% elif s.attendance_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ s.attendance_rate }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

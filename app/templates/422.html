@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-1">422</h1>
+            <h2>Unprocessable Entity</h2>
+            <p>Sorry, the request could not be processed due to invalid data.</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

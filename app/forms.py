@@ -1,78 +1,178 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, SelectMultipleField, DateField
-from wtforms.validators import DataRequired, ValidationError, EqualTo, Length
+from wtforms import (
+    StringField, PasswordField, BooleanField, SubmitField,
+    SelectField, SelectMultipleField, DateField, EmailField, TextAreaField, IntegerField
+)
+from wtforms.validators import DataRequired, ValidationError, EqualTo, Length, Email, Optional
 from app.models import User, Person, Student
 from app.models import Groups
 
-#Database query to be used by the add_studen() function in routes.py
-#the student group_select() function could use something like this too instead of a global variable
+
 def groups_query():
-    groups_query = Groups.query.all()
-    result = [(x.id, x.marking) for x in groups_query]
-    return result
+    """Query all groups for form choices."""
+    groups = Groups.query.all()
+    return [(g.id, g.marking) for g in groups]
 
-#Form for the login() function in routes.py
+
 class LoginForm(FlaskForm):
-    username = StringField('Käyttäjänimi', validators=[DataRequired()])
-    password = PasswordField('Salasana', validators=[DataRequired()])
-    submit = SubmitField('Kirjaudu sisään')
+    """Login form for user authentication."""
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me')
+    submit = SubmitField('Sign In')
 
-#Form for the create_user() function in routes.py
+
 class AdministrationForm(FlaskForm):
-    firstname = StringField('Etunimi', validators=[DataRequired(), Length(max=32, message='max 32 merkkiä')])
-    lastname = StringField('Sukunimi', validators=[DataRequired(), Length(max=128, message='max 128 merkkiä')])
-#    username = StringField('Käyttäjätunnus', validators=[DataRequired()])
-    password = PasswordField('Salasana', validators=[DataRequired(), Length(min=8, message='Vähintään 8 merkkiä')])
-    password2 = PasswordField('Toista salasana', validators=[DataRequired(), EqualTo('password', message='Salasanojen täytyy olla sama')])
-#pitää clearancessa muuttaa admin taso 0 -> jokin muu, esim 3.. ohjelma taitaa ymmärtää 0 "null"ina
-    clearance = SelectField(u'Taso', choices=[("3", 'Admin'), ('1', 'Opettaja'), ('2', 'Oppilas')], coerce=int, validators=[DataRequired()])
-    user_submit = SubmitField(label='Luo Käyttäjä')
-    get_users = SubmitField(label='Hae käyttäjät')
+    """Form for creating new users (admin only)."""
+    firstname = StringField(
+        'First Name',
+        validators=[DataRequired(), Length(max=32, message='Maximum 32 characters')]
+    )
+    lastname = StringField(
+        'Last Name',
+        validators=[DataRequired(), Length(max=128, message='Maximum 128 characters')]
+    )
+    password = PasswordField(
+        'Password',
+        validators=[
+            DataRequired(),
+            Length(min=8, message='At least 8 characters required')
+        ]
+    )
+    password2 = PasswordField(
+        'Repeat Password',
+        validators=[DataRequired(), EqualTo('password', message='Passwords must match')]
+    )
+    clearance = SelectField(
+        'Role',
+        choices=[("3", 'Admin'), ('1', 'Teacher'), ('2', 'Student')],
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    user_submit = SubmitField(label='Create User')
+    get_users = SubmitField(label='Search Users')
 
-#Checkin if the database already has a username that is to be added.
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user is not None:
-            raise ValidationError('Valitse muu käyttäjänimi.')
 
-#Form for the add_student() function in routes.py
 class StudentForm(FlaskForm):
-    firstname = StringField('Etunimi', validators=[DataRequired(), Length(max=32, message='max 32 merkkiä')])
-    lastname = StringField('Sukunimi', validators=[DataRequired(), Length(max=128, message='max 128 merkkiä')])
-    group = SelectField(u'Ryhmä', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Lisää oppilas')
+    """Form for adding new students."""
+    firstname = StringField(
+        'First Name',
+        validators=[DataRequired(), Length(max=32)]
+    )
+    lastname = StringField(
+        'Last Name',
+        validators=[DataRequired(), Length(max=128)]
+    )
+    group = SelectField('Group', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Add Student')
 
-#Form for the group_select() function in routes.py
+
 class LogAttendanceGroupSelectForm(FlaskForm):
-    group_select = SelectField(u'Ryhmä', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Valitse luokkaryhmä')
+    """Form for selecting group to log attendance."""
+    group_select = SelectField('Group', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Select Group')
 
-#Form for the attendance_check() function in routes.py
+
 class CheckAttendanceGroupSelectForm(FlaskForm):
-    group_select = SelectField(u'Ryhmähaku', coerce=int, validators=[DataRequired()])
-    by_student = SubmitField(label='Nimijärjestyksessä')
-    by_date = SubmitField(label='Päivämäärä laskien')
-    by_name = SubmitField(label='Hae oppilas')
-    student_name = StringField(u'Oppilas', validators=[Length(max=160, message='max 160 merkkiä')])
-    specific_date_start = StringField(u'Alku päivämäärä', validators=[Length(max=12, message='max 12 merkkiä')])
-    specific_date_end = StringField(u'Loppu päivämäärä', validators=[Length(max=12, message='max 12 merkkiä')])
-    by_specific_date = SubmitField(label='Hae päivämäärä')
+    """Form for checking attendance records."""
+    group_select = SelectField('Group Search', coerce=int, validators=[DataRequired()])
+    by_student = SubmitField(label='By Name')
+    by_date = SubmitField(label='By Date')
+    by_name = SubmitField(label='Search Student')
+    student_name = StringField('Student Name', validators=[Length(max=160)])
+    specific_date_start = DateField('Start Date')
+    specific_date_end = DateField('End Date')
+    by_specific_date = SubmitField(label='Search by Date Range')
 
-#Form for the attendance_selection() function in routes.py
+
 class AttendanceForm(FlaskForm):
-    attendance = SelectMultipleField(u'Oppilaat', coerce=int, validators=[DataRequired()])
-    submit = SubmitField(label='Kirjaa läsnäolleeksi')
+    """Form for recording attendance."""
+    attendance = SelectMultipleField('Students', coerce=int, validators=[DataRequired()])
+    submit = SubmitField(label='Mark as Present')
 
-#Form for add_groups() function in routes.py
+
 class GroupMarkingForm(FlaskForm):
-    marking = StringField('Luokkaryhmä', validators=[DataRequired(), Length(max=16, message='max 16 merkkiä')])
-    submit = SubmitField(label='Lisää luokkaryhmä')
+    """Form for creating groups."""
+    marking = StringField(
+        'Group Name',
+        validators=[DataRequired(), Length(max=16, message='Maximum 16 characters')]
+    )
+    submit = SubmitField(label='Add Group')
 
-#Form for the create_user() and check_user() functions in routes.py
+
+class ExcuseForm(FlaskForm):
+    """Form for submitting attendance excuse."""
+    student_name = StringField(
+        'Student Name',
+        validators=[DataRequired(), Length(max=160)]
+    )
+    date_from = DateField('From Date', validators=[DataRequired()])
+    date_to = DateField('To Date', validators=[DataRequired()])
+    reason = TextAreaField(
+        'Reason for Absence',
+        validators=[DataRequired(), Length(max=500)]
+    )
+    submit = SubmitField('Submit Excuse')
+
+
+class ReportForm(FlaskForm):
+    """Form for generating attendance reports."""
+    group_select = SelectField('Group', coerce=int, validators=[Optional()])
+    days = IntegerField(
+        'Days to Include',
+        default=30,
+        validators=[Optional()]
+    )
+    submit = SubmitField('Generate Report')
+
+
 class GetUserForm(FlaskForm):
-    get_users = SubmitField(label='Hae kaikki käyttäjät')
-    user_name = StringField(u'Käyttäjä', validators=[Length(max=161, message='max 161 merkkiä')])
-    get_user = SubmitField(label='Hae käyttäjä')
+    """Form for searching users."""
+    get_users = SubmitField(label='Get All Users')
+    user_name = StringField('Username', validators=[Length(max=161)])
+    get_user = SubmitField(label='Search User')
+
+
+class ChangePasswordForm(FlaskForm):
+    """Form for changing password while logged in."""
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField(
+        'New Password',
+        validators=[
+            DataRequired(),
+            Length(min=8, message='At least 8 characters required')
+        ]
+    )
+    new_password2 = PasswordField(
+        'Repeat New Password',
+        validators=[DataRequired(), EqualTo('new_password', message='Passwords must match')]
+    )
+    submit = SubmitField('Change Password')
+
+
+class PasswordResetRequestForm(FlaskForm):
+    """Form for requesting password reset."""
+    email = EmailField(
+        'Email Address',
+        validators=[DataRequired(), Email(message='Invalid email address')]
+    )
+    submit = SubmitField('Request Password Reset')
+
+
+class PasswordResetForm(FlaskForm):
+    """Form for resetting password with token."""
+    password = PasswordField(
+        'New Password',
+        validators=[
+            DataRequired(),
+            Length(min=8, message='At least 8 characters required')
+        ]
+    )
+    password2 = PasswordField(
+        'Repeat Password',
+        validators=[DataRequired(), EqualTo('password', message='Passwords must match')]
+    )
+    submit = SubmitField('Reset Password')
 
 
 

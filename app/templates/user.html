@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <table>
-        <tr valign="top">
-            <td>
-                <h1>Käyttäjä: {{ user.username }}</h1>
-                {% if user.last_seen %}<p>Viimeksi kirjautunut: {{ moment(user.last_seen).format('LLL') }}</p>{% endif %}
-            </td>
-        </tr>
-    </table>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <h1>User: {{ user.username }}</h1>
+            <table class="table mt-3">
+                <tr>
+                    <th>Email:</th>
+                    <td>{{ user.email if user.email else 'Not set' }}</td>
+                </tr>
+                <tr>
+                    <th>Role:</th>
+                    <td>{{ user.group }}</td>
+                </tr>
+                <tr>
+                    <th>Last Seen:</th>
+                    <td>{{ user.last_seen.strftime('%Y-%m-%d %H:%M') if user.last_seen else 'Never' }}</td>
+                </tr>
+                <tr>
+                    <th>Member Since:</th>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'Unknown' }}</td>
+                </tr>
+            </table>
+            <a href="{{ url_for('user.change_password') }}" class="btn btn-primary">Change Password</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1 class="mb-4">Excuse Management</h1>
+
+{% if pending_excuses %}
+<div class="card mb-4">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0">Pending Excuses ({{ pending_excuses|length }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Date From</th>
+                        <th>Date To</th>
+                        <th>Reason</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for excuse in pending_excuses %}
+                    <tr>
+                        <td>{{ excuse.student.full_name if excuse.student else 'Unknown' }}</td>
+                        <td>{{ excuse.date_from.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ excuse.date_to.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ excuse.reason }}</td>
+                        <td>{{ excuse.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form action="{{ url_for('admin.approve_excuse', excuse_id=excuse.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form action="{{ url_for('admin.reject_excuse', excuse_id=excuse.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-success">No pending excuses.</div>
+{% endif %}
+
+{% if processed_excuses %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Processed Excuses</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Date From</th>
+                        <th>Date To</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Processed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for excuse in processed_excuses %}
+                    <tr>
+                        <td>{{ excuse.student.full_name if excuse.student else 'Unknown' }}</td>
+                        <td>{{ excuse.date_from.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ excuse.date_to.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ excuse.reason[:50] }}{% if excuse.reason|length > 50 %}...{% endif %}</td>
+                        <td>
+                            {% if excuse.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ excuse.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

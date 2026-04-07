@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1 class="mb-4">Submit Attendance Excuse</h1>
+
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted">Use this form to submit an excuse for any absences. Your excuse will be reviewed by an administrator.</p>
+        
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.date_from.label(class="form-label") }}
+                {% if form.date_from.errors %}
+                    {{ form.date_from(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.date_from.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.date_from(class="form-control") }}
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.date_to.label(class="form-label") }}
+                {% if form.date_to.errors %}
+                    {{ form.date_to(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.date_to.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.date_to(class="form-control") }}
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.reason.label(class="form-label") }}
+                {% if form.reason.errors %}
+                    {{ form.reason(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.reason.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.reason(class="form-control", rows="4") }}
+                {% endif %}
+                <div class="form-text">Please explain the reason for your absence.</div>
+            </div>
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('user.my_attendance') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
