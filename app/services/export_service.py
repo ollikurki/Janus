@@ -30,7 +30,8 @@ class ExportService:
             Flask response with CSV file attachment
         """
         query = db.session.query(
-            Student.full_name, Groups.marking, Attendance.attendance
+            Student.full_name, Groups.marking, Attendance.attendance,
+            Attendance.status, Attendance.notes
         ).join(Attendance).join(Groups)
         
         if group_id:
@@ -49,10 +50,10 @@ class ExportService:
         # Create CSV
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(['Student Name', 'Group', 'Attendance Date'])
+        writer.writerow(['Student Name', 'Group', 'Attendance Date', 'Status', 'Notes'])
         
         for row in results:
-            writer.writerow([row[0], row[1], row[2]])
+            writer.writerow([row[0], row[1], row[2], row[3], row[4] or ''])
         
         response = make_response(output.getvalue())
         response.headers['Content-Type'] = 'text/csv'
@@ -89,7 +90,8 @@ class ExportService:
         
         # Query data
         query = db.session.query(
-            Student.full_name, Groups.marking, Attendance.attendance
+            Student.full_name, Groups.marking, Attendance.attendance,
+            Attendance.status, Attendance.notes
         ).join(Attendance).join(Groups)
         
         if group_id:
@@ -111,7 +113,12 @@ class ExportService:
             name = row[0]
             if name not in student_records:
                 student_records[name] = []
-            student_records[name].append(row[2])
+            # Include status and notes alongside date
+            student_records[name].append({
+                'date': row[2],
+                'status': row[3] or 'present',
+                'notes': row[4] or ''
+            })
         
         # Build PDF
         buffer = io.BytesIO()
@@ -146,16 +153,18 @@ class ExportService:
         elements.append(Spacer(1, 10*mm))
         
         # Create table data
-        table_data = [['Student Name', 'Attendance Dates']]
-        for name, dates in sorted(student_records.items()):
-            dates_str = ', '.join([d.strftime('%Y-%m-%d') for d in sorted(dates)])
-            table_data.append([name, dates_str])
+        table_data = [['Student Name', 'Attendance Dates', 'Status', 'Notes']]
+        for name, records in sorted(student_records.items()):
+            dates_str = ', '.join([r['date'].strftime('%Y-%m-%d') for r in sorted(records, key=lambda x: x['date'])])
+            statuses_str = ', '.join([r['status'].capitalize() for r in sorted(records, key=lambda x: x['date'])])
+            notes_str = '; '.join([r['notes'] for r in sorted(records, key=lambda x: x['date']) if r['notes']])
+            table_data.append([name, dates_str, statuses_str, notes_str or '—'])
         
         if not table_data[1:]:
-            table_data.append(['No records found', ''])
+            table_data.append(['No records found', '', '', ''])
         
         # Create table
-        table = Table(table_data, colWidths=[120*mm, 150*mm])
+        table = Table(table_data, colWidths=[80*mm, 80*mm, 60*mm, 50*mm])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),

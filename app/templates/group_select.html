@@ -3,10 +3,24 @@
 
 {% block app_content %}
 <div class="container mt-4">
-    <h1>Select Group</h1>
+    <h1>{{ title|default('Select Group') }}</h1>
     <div class="row">
         <div class="col-md-4">
+            {% if bulk_mode %}
+            <form action="{{ url_for('attendance.bulk_attendance') }}" method="GET">
+                <div class="mb-3">
+                    <label for="group_id" class="form-label">Group</label>
+                    <select name="group_id" id="group_id" class="form-select">
+                        {% for g in groups|default([]) %}
+                        <option value="{{ g[0] }}">{{ g[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Continue</button>
+            </form>
+            {% else %}
             {{ wtf.render_form(form, action=url_for('attendance.group_select'), method='POST') }}
+            {% endif %}
         </div>
     </div>
 </div>

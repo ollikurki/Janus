@@ -294,9 +294,50 @@ class PasswordHistory(db.Model):
 - Excel export with formatting
 - Attendance notes/comments per record
 
+### Phase K: Attendance Status & Core Fixes 🔧 IN PROGRESS
+
+**Goal:** Fix the fundamental attendance gap — currently only "present" can be recorded — and address other core issues.
+
+#### K.1: Attendance Status Field
+The `Attendance` model only records `student_id` + `date`. A student is either in the table (present) or not (absent). This means:
+- No "excused" or "late" status tracking
+- No comments/reasons per record
+- The `Excuse` model exists but isn't linked to `Attendance` records
+- Can't distinguish between "absent" and "excused absence"
+
+**Changes:**
+- Add `status` field to `Attendance`: `present`, `absent`, `excused`, `late`
+- Add `notes` field to `Attendance`: optional text for comments
+- Migrate existing records: current records → `status='present'`
+- Update `AttendanceService` to support all statuses
+- Update attendance forms to support bulk marking (present/absent/late/excused)
+- Update export (CSV/PDF) to include status and notes
+- Update API endpoints for status
+
+#### K.2: Fix `datetime.utcnow()` Deprecation
+Python 3.12 deprecated `datetime.utcnow()`. Replace with `datetime.now(timezone.utc)` throughout.
+
+#### K.3: Student-User Linking Fix
+Students can't log in to the student portal because `StudentService.create_student()` creates a `Person` with `student_id` but no `user_id`. Need to either auto-create student accounts or provide a proper linking flow.
+
+#### K.4: Analytics Dashboard
+`AttendanceService.get_group_statistics()` and `get_trend_data()` exist but aren't surfaced in the admin dashboard. Add charts/stats.
+
 ---
 
 ## 5. Implementation Roadmap
+
+### Phase K: Attendance Status & Core Fixes 🔧 IN PROGRESS
+1. [x] Add `status` and `notes` fields to `Attendance` model
+2. [x] Create database migration for new fields
+3. [x] Update `AttendanceService` for all statuses
+4. [x] Update attendance forms for bulk marking (present/absent/late/excused)
+5. [x] Update attendance routes and templates
+6. [x] Update export service (CSV/PDF) for status and notes
+7. [x] Update API endpoints for attendance status
+8. [x] Fix `datetime.utcnow()` → `datetime.now(timezone.utc)` throughout
+9. [ ] Fix student-user linking for student portal access
+10. [ ] Surface analytics in admin dashboard
 
 ### Phase F: Role & Permission System 🔲 INCEPTION
 1. [ ] Create `UserRole` model with seed data
@@ -433,8 +474,8 @@ Janus/
 
 *This plan is a living document and should be updated as the project evolves.*
 
-> **Last Updated:** April 7, 2026  
-> **Status:** ✅ ALL PHASES COMPLETE
+> **Last Updated:** April 9, 2026  
+> **Status:** 🔧 PHASE K IN PROGRESS
 
 ---
 

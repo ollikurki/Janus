@@ -2,7 +2,7 @@
 # Logging admin actions for security and compliance
 
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models import AuditLog, User
 from app import db
 
@@ -46,7 +46,7 @@ class AuditService:
             action=action,
             details=details,
             ip_address=ip_address,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
         db.session.add(log_entry)
         db.session.commit()

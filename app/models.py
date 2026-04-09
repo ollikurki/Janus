@@ -1,7 +1,7 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import secrets
 
 
@@ -16,21 +16,21 @@ class User(UserMixin, db.Model):
     # Role-based access: 1=Teacher, 2=Student, 3=Admin
     clearance: int = db.Column(db.Integer, default=1, index=True)
     group: str = db.Column(db.String(16))
-    last_seen: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Password reset tokens
     reset_token: str = db.Column(db.String(64), nullable=True, index=True)
     reset_token_expires: datetime = db.Column(db.DateTime, nullable=True)
     
     # Password security
-    password_changed_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    password_changed_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Account lockout
     failed_login_attempts: int = db.Column(db.Integer, default=0)
     locked_until: datetime = db.Column(db.DateTime, nullable=True)
     
     # Activity tracking
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     persons = db.relationship('Person', cascade='all, delete-orphan', backref='user')
     
@@ -57,14 +57,14 @@ class User(UserMixin, db.Model):
     def generate_reset_token(self) -> str:
         """Generate a secure password reset token."""
         self.reset_token = secrets.token_urlsafe(32)
-        self.reset_token_expires = datetime.utcnow()
+        self.reset_token_expires = datetime.now(timezone.utc)
         return self.reset_token
     
     def verify_reset_token(self, token: str) -> bool:
         """Verify if reset token is valid and not expired."""
         if self.reset_token != token:
             return False
-        if self.reset_token_expires < datetime.utcnow():
+        if self.reset_token_expires < datetime.now(timezone.utc):
             return False
         return True
     
@@ -77,7 +77,7 @@ class User(UserMixin, db.Model):
         """Check if account is currently locked."""
         if self.locked_until is None:
             return False
-        if datetime.utcnow() > self.locked_until:
+        if datetime.now(timezone.utc) > self.locked_until:
             # Lock has expired, unlock the account
             self.locked_until = None
             self.failed_login_attempts = 0
@@ -88,7 +88,7 @@ class User(UserMixin, db.Model):
         """Increment failed login counter and lock if threshold reached."""
         self.failed_login_attempts += 1
         if self.failed_login_attempts >= 10:
-            self.locked_until = datetime.utcnow() + timedelta(minutes=15)
+            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
     
     def unlock(self) -> None:
         """Manually unlock the account."""
@@ -105,11 +105,11 @@ class User(UserMixin, db.Model):
             bool: True if password has expired
         """
         expiry_date = self.password_changed_at + timedelta(days=days)
-        return datetime.utcnow() > expiry_date
+        return datetime.now(timezone.utc) > expiry_date
     
     def update_password_changed_at(self) -> None:
         """Update the password changed timestamp."""
-        self.password_changed_at = datetime.utcnow()
+        self.password_changed_at = datetime.now(timezone.utc)
 
 
 class AuditLog(db.Model):
@@ -120,7 +120,7 @@ class AuditLog(db.Model):
     action: str = db.Column(db.String(128), nullable=False)
     details: str = db.Column(db.String(512), nullable=True)
     ip_address: str = db.Column(db.String(45), nullable=True)
-    timestamp: datetime = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    timestamp: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     user = db.relationship('User', backref='audit_logs')
 
@@ -142,23 +142,33 @@ class Student(db.Model):
     group: str = db.Column(db.String(16))
     full_name: str = db.Column(db.String(160), index=True)
     group_id: int = db.Column(db.Integer, db.ForeignKey('groups.id'), index=True)
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     attendance_records = db.relationship('Attendance', cascade='all, delete-orphan', backref='student')
 
 
 class Attendance(db.Model):
-    """Attendance record model."""
-    
+    """Attendance record model.
+
+    Status values:
+        'present'  - Student was present
+        'absent'   - Student was absent (unexcused)
+        'excused'  - Student was absent with a valid excuse
+        'late'     - Student arrived late
+    """
+
     __table_args__ = (
         db.Index('idx_attendance_date', 'attendance'),
         db.Index('idx_attendance_student_date', 'student_id', 'attendance'),
+        db.Index('idx_attendance_status', 'status'),
     )
     
     id: int = db.Column(db.Integer, primary_key=True)
     student_id: int = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
     attendance: datetime = db.Column(db.Date, nullable=False, index=True)
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    status: str = db.Column(db.String(16), default='present', nullable=False)
+    notes: str = db.Column(db.String(500), nullable=True)
+    created_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class Groups(db.Model):
@@ -170,7 +180,7 @@ class Groups(db.Model):
     
     id: int = db.Column(db.Integer, primary_key=True)
     marking: str = db.Column(db.String(16), unique=True, nullable=False, index=True)
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     students = db.relationship('Student', cascade='all, delete-orphan', backref='group')
 
@@ -189,9 +199,14 @@ class Excuse(db.Model):
     date_to: datetime = db.Column(db.Date, nullable=False)
     reason: str = db.Column(db.String(500), nullable=False)
     status: str = db.Column(db.String(16), default='pending')  # pending, approved, rejected
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     student = db.relationship('Student', backref='excuses')
+
+
+# ── Valid attendance statuses ──────────────────────────────────────────────────
+
+ATTENDANCE_STATUSES = ('present', 'absent', 'excused', 'late')
 
 
 def load_user(id: str) -> User:

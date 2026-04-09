@@ -32,19 +32,29 @@
         </div>
         <div class="card-body">
             <div class="row text-center">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <h3>{{ stats.total_students }}</h3>
                     <p class="text-muted">Students in Group</p>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <h3>{{ stats.total_records }}</h3>
                     <p class="text-muted">Attendance Records</p>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <h3 class="{% if stats.attendance_rate >= 75 %}text-success{% elif stats.attendance_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
                         {{ stats.attendance_rate }}%
                     </h3>
                     <p class="text-muted">Attendance Rate</p>
+                </div>
+                <div class="col-md-3">
+                    {% if stats.status_breakdown %}
+                    <div class="small text-start">
+                        <span class="badge bg-success">Present: {{ stats.status_breakdown.get('present', 0) }}</span>
+                        <span class="badge bg-danger">Absent: {{ stats.status_breakdown.get('absent', 0) }}</span>
+                        <span class="badge bg-warning text-dark">Excused: {{ stats.status_breakdown.get('excused', 0) }}</span>
+                        <span class="badge bg-info">Late: {{ stats.status_breakdown.get('late', 0) }}</span>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

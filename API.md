@@ -3,7 +3,7 @@
 > **API Version:** 1.0  
 > **Base URL:** `/api/v1`  
 > **Authentication:** JWT Bearer tokens  
-> **Last Updated:** April 7, 2026
+> **Last Updated:** April 9, 2026
 
 ---
 
@@ -211,7 +211,7 @@ Content-Type: application/json
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/attendance` | List attendance (with filters) | Teacher+ |
-| POST | `/attendance` | Log attendance | Teacher+ |
+| POST | `/attendance` | Log attendance (simple or bulk) | Teacher+ |
 
 #### List Attendance
 
@@ -220,9 +220,27 @@ GET /api/v1/attendance?group_id=1
 Authorization: Bearer <token>
 ```
 
-Optional query params: `group_id`, `start_date`, `end_date`
+Optional query params: `group_id`, `student_id`, `start_date`, `end_date`, `date`
 
-#### Log Attendance
+**Response:**
+```json
+{
+  "attendance": [
+    {
+      "id": 1,
+      "student_id": 5,
+      "student_name": "John Smith",
+      "attendance": "2026-04-09",
+      "status": "present",
+      "notes": null
+    }
+  ]
+}
+```
+
+#### Log Attendance (Simple)
+
+Mark multiple students with the same status:
 
 ```http
 POST /api/v1/attendance
@@ -231,7 +249,57 @@ Content-Type: application/json
 
 {
   "student_ids": [1, 2, 3],
-  "date": "2026-04-07"
+  "date": "2026-04-09",
+  "status": "present",
+  "notes": "Optional notes"
+}
+```
+
+**Parameters:**
+- `student_ids` (required): Array of student IDs
+- `date` (optional): Date in YYYY-MM-DD format (defaults to today)
+- `status` (optional): One of `present`, `absent`, `excused`, `late` (defaults to `present`)
+- `notes` (optional): Notes for the attendance record
+
+**Response:**
+```json
+{
+  "message": "Attendance logged",
+  "created": 3,
+  "skipped": 0
+}
+```
+
+#### Log Attendance (Bulk)
+
+Mark each student with an individual status:
+
+```http
+POST /api/v1/attendance
+Authorization: Bearer <teacher_token>
+Content-Type: application/json
+
+{
+  "records": [
+    {"student_id": 1, "status": "present"},
+    {"student_id": 2, "status": "absent", "notes": "Sick"},
+    {"student_id": 3, "status": "late", "notes": "Bus delay"}
+  ],
+  "date": "2026-04-09"
+}
+```
+
+**Parameters:**
+- `records` (required): Array of objects with `student_id`, `status` (optional, defaults to `present`), and `notes` (optional)
+- `date` (optional): Date in YYYY-MM-DD format (defaults to today)
+
+**Response:**
+```json
+{
+  "message": "Attendance logged",
+  "created": 2,
+  "updated": 1,
+  "skipped": 0
 }
 ```
 

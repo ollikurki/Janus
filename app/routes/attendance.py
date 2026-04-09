@@ -8,10 +8,10 @@ from flask import (
 from flask_login import login_required, current_user
 from app.forms import (
     LogAttendanceGroupSelectForm, CheckAttendanceGroupSelectForm,
-    AttendanceForm, ReportForm
+    AttendanceForm, ReportForm, BulkAttendanceForm
 )
 from app.services import AttendanceService, ExportService, StudentService, AuditService
-from app.models import Groups
+from app.models import Groups, ATTENDANCE_STATUSES
 from app import db
 from datetime import date
 
@@ -65,14 +65,18 @@ def log_attendance():
     form.attendance.choices = student_list
     
     if form.attendance.data and form.validate_on_submit():
-        created, skipped = AttendanceService.log_attendance(form.attendance.data)
+        status = form.status.data
+        notes = form.notes.data or None
+        created, skipped = AttendanceService.log_attendance(
+            form.attendance.data, status=status, notes=notes
+        )
         AuditService.log(
             action=AuditService.ATTENDANCE_LOGGED,
             user_id=current_user.id,
-            details=f'Logged attendance: {created} present, {skipped} skipped',
+            details=f'Logged attendance: {created} {status}, {skipped} skipped',
             ip_address=request.remote_addr
         )
-        flash(f'Attendance recorded! Created: {created}, Skipped (already exists): {skipped}')
+        flash(f'Attendance recorded! Created: {created} ({status}), Skipped (already exists): {skipped}')
         session.pop('student_list', None)
     
     return render_template(
@@ -80,6 +84,82 @@ def log_attendance():
         title='Log Attendance',
         form=form,
         sizelength=len(student_list)
+    )
+
+
+@attendance_bp.route('/bulk_attendance', methods=['GET', 'POST'])
+@login_required
+def bulk_attendance():
+    """Bulk attendance marking with per-student status (teachers only).
+
+    Shows all students in a group with individual status dropdowns
+    (present/absent/excused/late) and optional notes fields.
+    """
+    if not current_user.is_teacher():
+        flash('Unauthorized access!')
+        return redirect('/')
+
+    form = BulkAttendanceForm()
+
+    # GET: show group selector if no group chosen yet
+    group_id = request.args.get('group_id', type=int) or request.form.get('group_id', type=int)
+    if not group_id:
+        groups = StudentService.get_groups()
+        form = LogAttendanceGroupSelectForm()
+        form.group_select.choices = groups
+        return render_template(
+            'group_select.html',
+            title='Select Group for Bulk Attendance',
+            form=form,
+            bulk_mode=True,
+            groups=groups
+        )
+
+    students = StudentService.get_students_by_group(group_id)
+
+    if request.method == 'POST':
+        attendance_date = form.attendance_date.data or date.today()
+        records = []
+
+        for student in students:
+            status = request.form.get(f'status_{student.id}', 'present')
+            notes = request.form.get(f'notes_{student.id}', '').strip() or None
+            if status in ATTENDANCE_STATUSES:
+                records.append({
+                    'student_id': student.id,
+                    'status': status,
+                    'notes': notes
+                })
+
+        if records:
+            created, updated, skipped = AttendanceService.log_bulk_attendance(
+                records, attendance_date=attendance_date
+            )
+            AuditService.log(
+                action=AuditService.ATTENDANCE_LOGGED,
+                user_id=current_user.id,
+                details=f'Bulk attendance: {created} created, {updated} updated, {skipped} skipped',
+                ip_address=request.remote_addr
+            )
+            flash(f'Attendance saved! Created: {created}, Updated: {updated}, Skipped: {skipped}')
+            return redirect(url_for('attendance.bulk_attendance', group_id=group_id))
+
+    # Pre-fill existing attendance for today
+    existing = {}
+    for student in students:
+        record = AttendanceService._record_exists(student.id, date.today())
+        if record:
+            existing[student.id] = {'status': record.status, 'notes': record.notes or ''}
+
+    return render_template(
+        'log_attendance.html',
+        title='Bulk Attendance',
+        form=form,
+        students=students,
+        existing=existing,
+        statuses=ATTENDANCE_STATUSES,
+        group_id=group_id,
+        bulk_mode=True
     )
 
 

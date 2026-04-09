@@ -88,7 +88,19 @@ class CheckAttendanceGroupSelectForm(FlaskForm):
 class AttendanceForm(FlaskForm):
     """Form for recording attendance."""
     attendance = SelectMultipleField('Students', coerce=int, validators=[DataRequired()])
-    submit = SubmitField(label='Mark as Present')
+    status = SelectField(
+        'Status',
+        choices=[
+            ('present', 'Present'),
+            ('absent', 'Absent'),
+            ('excused', 'Excused'),
+            ('late', 'Late')
+        ],
+        default='present',
+        validators=[DataRequired()]
+    )
+    notes = TextAreaField('Notes', validators=[Length(max=500)], render_kw={"placeholder": "Optional notes"})
+    submit = SubmitField(label='Mark Attendance')
 
 
 class GroupMarkingForm(FlaskForm):
@@ -148,6 +160,17 @@ class ChangePasswordForm(FlaskForm):
         validators=[DataRequired(), EqualTo('new_password', message='Passwords must match')]
     )
     submit = SubmitField('Change Password')
+
+
+class BulkAttendanceForm(FlaskForm):
+    """Form for bulk attendance marking with per-student status.
+
+    This form is built dynamically in the route handler — the fields below
+    are only the static parts. Per-student status/notes fields are added at
+    render time via FieldList or directly in the template.
+    """
+    attendance_date = DateField('Date', validators=[DataRequired()])
+    submit = SubmitField('Save Attendance')
 
 
 class PasswordResetRequestForm(FlaskForm):

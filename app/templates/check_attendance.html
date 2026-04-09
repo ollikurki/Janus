@@ -22,7 +22,9 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Present</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,6 +32,13 @@
                     <tr>
                         <td>{{ row[2] }}</td>
                         <td>{{ row[3] }}</td>
+                        <td>
+                            {% set status = row[4] if row|length > 4 else 'present' %}
+                            <span class="badge {% if status == 'present' %}bg-success{% elif status == 'absent' %}bg-danger{% elif status == 'excused' %}bg-warning text-dark{% elif status == 'late' %}bg-info{% endif %}">
+                                {{ status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ row[5] if row|length > 5 and row[5] else '' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

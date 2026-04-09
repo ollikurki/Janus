@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 from app.services import UserService, StudentService, AttendanceService, ExportService
 from app.models import User
 from app import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 
@@ -24,7 +24,7 @@ def health_check():
     """Health check endpoint - public."""
     return jsonify({
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat()
+        'timestamp': datetime.now(timezone.utc).isoformat()
     }), 200
 
 
@@ -391,7 +391,9 @@ def get_attendance():
             {
                 'id': r.id,
                 'student_id': r.student_id,
-                'attendance': r.attendance.isoformat() if r.attendance else None
+                'attendance': r.attendance.isoformat() if r.attendance else None,
+                'status': r.status,
+                'notes': r.notes
             } for r in records
         ]
     elif start_date and end_date:
@@ -404,7 +406,9 @@ def get_attendance():
                 'id': r[0],
                 'student_id': r[1],
                 'student_name': r[2],
-                'attendance': r[3].isoformat() if r[3] else None
+                'attendance': r[3].isoformat() if r[3] else None,
+                'status': r[4] if len(r) > 4 else 'present',
+                'notes': r[5] if len(r) > 5 else None
             } for r in records
         ]
     elif group_id:
@@ -414,7 +418,9 @@ def get_attendance():
                 'id': r[0],
                 'student_id': r[1],
                 'student_name': r[2],
-                'attendance': r[3].isoformat() if r[3] else None
+                'attendance': r[3].isoformat() if r[3] else None,
+                'status': r[4] if len(r) > 4 else 'present',
+                'notes': r[5] if len(r) > 5 else None
             } for r in records
         ]
     else:
@@ -431,7 +437,18 @@ def log_attendance():
     Request body:
         {
             "student_ids": [1, 2, 3],
-            "date": "YYYY-MM-DD" (optional, defaults to today)
+            "date": "YYYY-MM-DD" (optional, defaults to today),
+            "status": "present|absent|excused|late" (optional, defaults to "present"),
+            "notes": "string" (optional)
+        }
+    
+    Or for bulk with per-student status:
+        {
+            "records": [
+                {"student_id": 1, "status": "present", "notes": "..."},
+                {"student_id": 2, "status": "absent", "notes": "sick"}
+            ],
+            "date": "YYYY-MM-DD" (optional)
         }
     """
     current_user_obj = User.query.get(get_jwt_identity())
@@ -439,16 +456,45 @@ def log_attendance():
         return jsonify({'error': 'Teacher access required'}), 403
     
     data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
     
-    if not data or 'student_ids' not in data:
-        return jsonify({'error': 'student_ids required'}), 400
-    
-    from datetime import date
-    attendance_date = date.today()
+    from datetime import date as date_type
+    attendance_date = date_type.today()
     if 'date' in data:
         attendance_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
     
-    created, skipped = AttendanceService.log_attendance(data['student_ids'], attendance_date)
+    # Bulk mode: per-student status
+    if 'records' in data:
+        from app.models import ATTENDANCE_STATUSES
+        records = []
+        for rec in data['records']:
+            if 'student_id' not in rec:
+                return jsonify({'error': 'Each record must have student_id'}), 400
+            if rec.get('status') and rec['status'] not in ATTENDANCE_STATUSES:
+                return jsonify({'error': f"Invalid status '{rec['status']}'. Must be one of {ATTENDANCE_STATUSES}"}), 400
+            records.append({
+                'student_id': rec['student_id'],
+                'status': rec.get('status', 'present'),
+                'notes': rec.get('notes')
+            })
+        created, updated, skipped = AttendanceService.log_bulk_attendance(records, attendance_date=attendance_date)
+        return jsonify({
+            'message': 'Attendance logged',
+            'created': created,
+            'updated': updated,
+            'skipped': skipped
+        }), 201
+    
+    # Simple mode: all students get same status
+    if 'student_ids' not in data:
+        return jsonify({'error': 'student_ids or records required'}), 400
+    
+    status = data.get('status', 'present')
+    notes = data.get('notes')
+    created, skipped = AttendanceService.log_attendance(
+        data['student_ids'], attendance_date=attendance_date, status=status, notes=notes
+    )
     
     return jsonify({
         'message': 'Attendance logged',

@@ -26,17 +26,25 @@
                 <thead>
                     <tr>
                         <th>Date</th>
+                        <th>Status</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for record in attendance_records %}
                     <tr>
                         <td>{{ record.attendance.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="badge {% if record.status == 'present' %}bg-success{% elif record.status == 'absent' %}bg-danger{% elif record.status == 'excused' %}bg-warning text-dark{% elif record.status == 'late' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ record.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ record.notes or '' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <p><strong>Total Days Present:</strong> {{ attendance_records|length }}</p>
+            <p><strong>Total Records:</strong> {{ attendance_records|length }}</p>
             {% else %}
             <p class="text-muted">No attendance records found.</p>
             {% endif %}
