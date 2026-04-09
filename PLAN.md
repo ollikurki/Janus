@@ -109,18 +109,34 @@ Janus is a Flask-based student attendance management system providing role-based
 - [x] Breadcrumbs navigation
 - [x] Active nav state highlighting
 
+### Phase K: Attendance Status & Core Fixes 🔧 IN PROGRESS
+- [x] Add `status` (present/absent/excused/late) and `notes` fields to Attendance model
+- [x] Add `ATTENDANCE_STATUSES` constant for validation
+- [x] Create database migration for new fields
+- [x] Update `AttendanceService` with `log_bulk_attendance()` and status support
+- [x] Add `BulkAttendanceForm` and `/attendance/bulk_attendance` route
+- [x] Update attendance templates (status badges, notes column, bulk mode)
+- [x] Update export service (CSV/PDF) to include status and notes
+- [x] Update REST API: GET returns status/notes, POST accepts status/notes/bulk records
+- [x] Fix `datetime.utcnow()` → `datetime.now(timezone.utc)` throughout codebase
+- [x] Update API.md documentation with new attendance endpoints
+- [ ] Fix student-user linking for student portal access
+- [ ] Surface analytics in admin dashboard
+
 ---
 
 ## 3. Known Issues & Technical Debt
 
 ### 3.1 Critical Issues
 
-| Issue | Description | Fix Approach |
-|-------|-------------|--------------|
-| **Magic numbers for roles** | `clearance: 1=Teacher, 2=Student, 3=Admin` hardcoded everywhere | Create `UserRole` enum model |
-| **Group is just a string** | `group` field on User is a string, Groups model exists but not used consistently | Normalize group association |
-| **Username auto-gen** | `lastname.firstname` format is inflexible | Allow custom usernames |
-| **Email auto-gen** | `username@janus.local` is unrealistic | Require real email input |
+| Issue | Description | Fix Approach | Status |
+|-------|-------------|--------------|--------|
+| **Magic numbers for roles** | `clearance: 1=Teacher, 2=Student, 3=Admin` hardcoded everywhere | Create `UserRole` enum model | 🔲 Phase F |
+| **Group is just a string** | `group` field on User is a string, Groups model exists but not used consistently | Normalize group association | 🔲 Phase F |
+| **Username auto-gen** | `lastname.firstname` format is inflexible | Allow custom usernames | 🔲 Backlog |
+| **Email auto-gen** | `username@janus.local` is unrealistic | Require real email input | 🔲 Backlog |
+| **Student-User linking** | Students can't log in to portal — `StudentService.create_student()` creates `Person` with `student_id` but no `user_id` | Auto-create student accounts or add linking flow | 🔲 Phase K |
+| **`datetime.utcnow()` deprecated** | Python 3.12 deprecated `datetime.utcnow()` | Replace with `datetime.now(timezone.utc)` | ✅ Done (Phase K) |
 
 ### 3.2 Missing Domain Concepts
 
@@ -147,7 +163,9 @@ Janus is a Flask-based student attendance management system providing role-based
 | Feature | Status | Priority |
 |---------|--------|----------|
 | Audit log viewer UI | Logs created but no UI | Medium |
-| Bulk attendance (absent + reason) | ✅ Implemented in Phase K (present/absent/excused/late + notes) | Done |
+| Bulk attendance (absent + reason) | ✅ Phase K: present/absent/excused/late + notes | Done |
+| Attendance status tracking | ✅ Phase K: multi-status with color-coded badges | Done |
+| Analytics dashboard | Service methods exist but no UI | Medium |
 | Real-time notifications | Not implemented | Low |
 | Localization (i18n) | Finnish text hardcoded | Low |
 | User profile pictures | Not implemented | Low |
@@ -291,38 +309,41 @@ class PasswordHistory(db.Model):
 **Goal:** Efficient batch operations for attendance
 
 #### Features:
-- CSV bulk import for students
-- Bulk attendance marking (present/absent/excused)
-- Excel export with formatting
-- Attendance notes/comments per record
+- CSV bulk import for students 🔲
+- ~~Bulk attendance marking (present/absent/excused)~~ ✅ Done in Phase K
+- Enhanced Excel export with formatting 🔲
+- ~~Attendance notes/comments per record~~ ✅ Done in Phase K
 
-### Phase K: Attendance Status & Core Fixes 🔧 IN PROGRESS
+### 4.6 Phase K: Attendance Status & Core Fixes 🔧 IN PROGRESS
 
-**Goal:** Fix the fundamental attendance gap — currently only "present" can be recorded — and address other core issues.
+**Goal:** Fix the fundamental attendance gap and address core issues.
 
-#### K.1: Attendance Status Field
-The `Attendance` model only records `student_id` + `date`. A student is either in the table (present) or not (absent). This means:
-- No "excused" or "late" status tracking
-- No comments/reasons per record
-- The `Excuse` model exists but isn't linked to `Attendance` records
-- Can't distinguish between "absent" and "excused absence"
+#### K.1: Attendance Status Field ✅
+**Problem (now fixed):** The `Attendance` model only recorded `student_id` + `date`. A student was either in the table (present) or not (absent). No way to track excused, late, or add notes.
 
-**Changes:**
-- Add `status` field to `Attendance`: `present`, `absent`, `excused`, `late`
-- Add `notes` field to `Attendance`: optional text for comments
-- Migrate existing records: current records → `status='present'`
-- Update `AttendanceService` to support all statuses
-- Update attendance forms to support bulk marking (present/absent/late/excused)
-- Update export (CSV/PDF) to include status and notes
-- Update API endpoints for status
+**Changes implemented:**
+- Added `status` field to `Attendance`: `present`, `absent`, `excused`, `late`
+- Added `notes` field to `Attendance`: optional text for comments
+- Added `ATTENDANCE_STATUSES` constant tuple for validation
+- Added index on `status` for filtered queries
+- Created migration `001_add_attendance_status.py`
+- Updated `AttendanceService` with `log_bulk_attendance()` for per-student status
+- Updated `_record_exists()` to return the record (for updates) instead of just `bool`
+- Updated `get_group_statistics()` to return `status_breakdown` dict
+- Updated attendance forms: `AttendanceForm` now has `status` and `notes` fields
+- Added `BulkAttendanceForm` for per-student status marking
+- Added `/attendance/bulk_attendance` route with group selector and per-student dropdowns
+- Updated templates: status badges (color-coded), notes column, bulk mode
+- Updated CSV/PDF export to include status and notes columns
+- Updated REST API: GET returns status/notes, POST accepts status/notes/bulk records
 
-#### K.2: Fix `datetime.utcnow()` Deprecation
-Python 3.12 deprecated `datetime.utcnow()`. Replace with `datetime.now(timezone.utc)` throughout.
+#### K.2: Fix `datetime.utcnow()` Deprecation ✅
+Replaced all 16 occurrences of `datetime.utcnow()` with `datetime.now(timezone.utc)` across `models.py`, `audit_service.py`, and `api.py`. Also updated `default=datetime.utcnow` to `default=lambda: datetime.now(timezone.utc)` for SQLAlchemy column defaults.
 
-#### K.3: Student-User Linking Fix
+#### K.3: Student-User Linking Fix 🔲
 Students can't log in to the student portal because `StudentService.create_student()` creates a `Person` with `student_id` but no `user_id`. Need to either auto-create student accounts or provide a proper linking flow.
 
-#### K.4: Analytics Dashboard
+#### K.4: Analytics Dashboard 🔲
 `AttendanceService.get_group_statistics()` and `get_trend_data()` exist but aren't surfaced in the admin dashboard. Add charts/stats.
 
 ---
@@ -403,48 +424,48 @@ Janus/
 │   └── workflows/
 │       └── test.yml              # CI pipeline
 ├── app/
-│   ├── __init__.py               # App factory
-│   ├── extensions.py             # Extension initialization
+│   ├── __init__.py               # App factory + extension init
+│   ├── config.py                 # Configuration classes
+│   ├── models.py                 # User, Student, Attendance (w/ status+notes), Groups, Excuse, AuditLog
+│   ├── forms.py                  # 16+ forms (incl. BulkAttendanceForm, status fields)
+│   ├── errors.py                 # Error handlers (400, 403, 404, 422, 500)
 │   ├── routes/
 │   │   ├── __init__.py           # Blueprint registration
 │   │   ├── main.py              # Dashboard routes
 │   │   ├── auth.py              # Authentication routes
 │   │   ├── admin.py             # Admin routes
-│   │   ├── attendance.py         # Attendance routes
+│   │   ├── attendance.py         # Attendance routes (incl. bulk_attendance)
 │   │   ├── user.py              # User profile routes
-│   │   ├── course.py            # Course management (NEW)
-│   │   └── api.py               # REST API routes
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── user.py              # User, UserRole, Permission
-│   │   ├── student.py           # Student, Family, Guardian
-│   │   ├── attendance.py        # Attendance, CourseAttendance
-│   │   ├── course.py            # Course (NEW)
-│   │   └── group.py             # Groups
-│   ├── forms/
-│   │   ├── __init__.py
-│   │   ├── auth_forms.py
-│   │   ├── admin_forms.py
-│   │   └── attendance_forms.py
+│   │   └── api.py               # REST API routes (JWT auth)
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── auth_service.py
-│   │   ├── user_service.py
-│   │   ├── attendance_service.py
-│   │   ├── course_service.py    # NEW
-│   │   └── export_service.py
-│   ├── templates/
-│   │   └── ...                   # 25+ HTML templates
-│   ├── static/
-│   │   └── ...                   # CSS, JS, PDFs
-│   └── errors.py                 # Error handlers
-├── logs/                         # Application logs
+│   │   ├── user_service.py      # User CRUD
+│   │   ├── student_service.py   # Student CRUD
+│   │   ├── attendance_service.py # Attendance logic (incl. bulk, status)
+│   │   ├── audit_service.py     # Audit logging
+│   │   ├── export_service.py    # CSV/PDF export (incl. status+notes)
+│   │   └── email_service.py     # Email (stub + Flask-Mail)
+│   ├── templates/                # 24 HTML templates (Bootstrap 5)
+│   └── static/                   # CSS, JS, PDFs
 ├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── robot/
-│       └── full_tests/
-└── migrations/                   # Flask-Migrate
+│   ├── README.md
+│   ├── test_janus.py
+│   └── test_runs/
+│       └── full_tests/           # Robot framework tests
+├── migrations/
+│   └── versions/
+│       └── 001_add_attendance_status.py  # Phase K migration
+├── Janus.py                      # Application entry point
+├── config.py                     # Configuration classes
+├── requirements.txt              # Dependencies
+├── Dockerfile                    # Container definition
+├── docker-compose.yml            # Local development stack
+├── mypy.ini                     # Type checking config
+├── pytest.ini                    # Test configuration
+├── API.md                        # REST API documentation
+├── CONTRIBUTING.md               # Contribution guidelines
+├── LICENSE                       # MIT License
+└── PLAN.md                       # This file
 ```
 
 ---
@@ -454,7 +475,7 @@ Janus/
 | Metric | Current | Target |
 |--------|---------|--------|
 | Code modularity | Feature-based blueprints + services ✅ | Complete |
-| Test coverage | Basic | 80%+ |
+| Test coverage | Basic (model + route tests) | 80%+ 🔲 |
 | API readiness | Full REST API ✅ | Complete |
 | Session storage | In-memory (Redis in compose) | Complete |
 | Email notifications | Stub + Flask-Mail ready ✅ | Functional |
@@ -462,12 +483,12 @@ Janus/
 | Docker support | Complete ✅ | Complete |
 | Audit logging | Implemented ✅ | Complete |
 | Account lockout | Implemented ✅ | Complete |
-| Password expiry | Enforced on change password ✅ | Enforced on login |
+| Password expiry | Enforced on change password ✅ | Enforced on login 🔲 |
 | Reporting & Analytics | Implemented ✅ | Complete |
 | PDF Export | Implemented ✅ | Complete |
 | Excuse submissions | Implemented ✅ | Complete |
 | Breadcrumbs/Active nav | Implemented ✅ | Complete |
-| Attendance status | Binary (present/absent) | ✅ Multi-status (present/absent/excused/late + notes) |
+| Attendance status | ✅ Multi-status (present/absent/excused/late + notes) | Complete |
 | Role system | Magic numbers | Type-safe enum |
 | Course system | None | Implemented |
 | Parent accounts | None | Implemented |
