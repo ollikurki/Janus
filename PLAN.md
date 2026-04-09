@@ -1,7 +1,7 @@
 # Janus Student Attendance Management System - Architectural Plan
 
-> **Last Updated:** April 7, 2026  
-> **Status:** ✅ ALL PHASES COMPLETE | PHASE F INCEPTION
+> **Last Updated:** April 9, 2026  
+> **Status:** 🔧 PHASE K IN PROGRESS
 
 ---
 
@@ -30,7 +30,9 @@ Janus is a Flask-based student attendance management system providing role-based
         ▼                       ▼                       ▼
 ┌──────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │  routes/     │     │    models.py     │     │    forms.py     │
-│  (6 blueprint)│     │  (User, Student) │     │  (15+ forms)    │
+│  (6 blueprint)│     │  (User, Student, │     │  (16+ forms)    │
+│  + bulk_att) │     │  Attendance w/   │     │  (incl. status) │
+│              │     │  status+notes)   │     │                  │
 └──────────────┘     └──────────────────┘     └─────────────────┘
         │
         ▼
@@ -145,7 +147,7 @@ Janus is a Flask-based student attendance management system providing role-based
 | Feature | Status | Priority |
 |---------|--------|----------|
 | Audit log viewer UI | Logs created but no UI | Medium |
-| Bulk attendance (absent + reason) | Only "present" marking | High |
+| Bulk attendance (absent + reason) | ✅ Implemented in Phase K (present/absent/excused/late + notes) | Done |
 | Real-time notifications | Not implemented | Low |
 | Localization (i18n) | Finnish text hardcoded | Low |
 | User profile pictures | Not implemented | Low |
@@ -370,13 +372,13 @@ Students can't log in to the student portal because `StudentService.create_stude
 4. [ ] Add IP allowlisting option
 5. [ ] Add 2FA support (TOTP)
 
-### Phase J: Bulk Operations 🔲 BACKLOG
+### Phase J: Bulk Operations & Import 🔲 BACKLOG
 1. [ ] CSV student import
-2. [ ] Bulk attendance marking
+2. [x] Bulk attendance marking *(done in Phase K)*
 3. [ ] Enhanced Excel export
-4. [ ] Attendance notes field
+4. [x] Attendance notes field *(done in Phase K)*
 
-### Phase K: Documentation 🔲 BACKLOG
+### Phase L: Documentation 🔲 BACKLOG
 1. [ ] Update README.md with current feature set and setup instructions
 2. [ ] Sync API.md with all implemented endpoints
 3. [ ] Add inline documentation to service classes
@@ -465,6 +467,7 @@ Janus/
 | PDF Export | Implemented ✅ | Complete |
 | Excuse submissions | Implemented ✅ | Complete |
 | Breadcrumbs/Active nav | Implemented ✅ | Complete |
+| Attendance status | Binary (present/absent) | ✅ Multi-status (present/absent/excused/late + notes) |
 | Role system | Magic numbers | Type-safe enum |
 | Course system | None | Implemented |
 | Parent accounts | None | Implemented |
